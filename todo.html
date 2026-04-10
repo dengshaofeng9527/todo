@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="待办">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#667eea">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="manifest" href="manifest.json">
+<title>待办事项</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+    background: #f2f2f7;
+    color: #000;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    -webkit-text-size-adjust: 100%;
+    overscroll-behavior: none;
+  }
+
+  /* 顶部导航 - 适配iOS刘海屏 */
+  .navbar {
+    padding: env(safe-area-inset-top, 20px) 16px 12px;
+    padding-top: max(env(safe-area-inset-top), 50px);
+    background: #fff;
+    border-bottom: 1px solid #e5e5e5;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .navbar h1 {
+    font-size: 32px;
+    font-weight: 700;
+  }
+  .navbar .subtitle {
+    font-size: 13px;
+    color: #8e8e93;
+    margin-top: 2px;
+  }
+
+  /* 输入区 */
+  .input-section {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e5e5;
+    background: #fff;
+  }
+  .input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .input-row input[type="text"] {
+    flex: 1;
+    padding: 10px 0;
+    border: none;
+    font-size: 17px;
+    outline: none;
+    -webkit-appearance: none;
+    background: transparent;
+  }
+  .input-row input[type="text"]::placeholder {
+    color: #c7c7cc;
+  }
+  .btn-add {
+    padding: 8px 14px;
+    background: #ffc107;
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    -webkit-appearance: none;
+  }
+  .btn-add:active { opacity: .7; }
+
+  /* 时间选择器 */
+  .time-section {
+    margin-top: 16px;
+  }
+  .time-quick-btns {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .time-quick-btn {
+    padding: 12px 8px;
+    background: #f5f5f7;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: all .2s;
+    text-align: center;
+    font-weight: 500;
+  }
+  .time-quick-btn:active {
+    transform: scale(0.95);
+    background: #fff8e1;
+  }
+  .time-quick-btn.selected {
+    background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+    border-color: #ffc107;
+    color: #000;
+    font-weight: 600;
+  }
+  .time-custom-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 16px;
+    background: #ffc107;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    -webkit-appearance: none;
+    transition: all .2s;
+  }
+  .time-custom-btn:active {
+    transform: scale(0.98);
+    opacity: .7;
+  }
+  .time-custom-btn.has-time {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+  }
+  .time-custom-btn .icon {
+    font-size: 18px;
+  }
+  .time-custom-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  /* 列表 */
+  .list-section {
+    overflow: hidden;
+    background: #fff;
+    margin: 12px 0;
+    border-radius: 12px;
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #c7c7cc;
+    font-size: 15px;
+  }
+  ul { list-style: none; }
+  li {
+    border-bottom: 1px solid #e5e5e5;
+    position: relative;
+    overflow: hidden;
+    padding: 0 16px;
+  }
+  li:last-child { border-bottom: none; }
+
+  /* 滑动容器 */
+  .swipe-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    background: transparent;
+    transition: transform .2s ease-out;
+    touch-action: pan-y;
+    position: relative;
+    z-index: 2;
+  }
+  li .swipe-wrap {
+    background: #fff;
+    margin: 0 -16px;
+    padding: 12px 16px;
+    position: relative;
+    z-index: 2;
+  }
+  li.done .swipe-wrap { background: #e8f5e9; }
+
+  /* 滑动操作区 - 覆盖在内容上 */
+  .swipe-actions {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    z-index: 3;
+    transform: translateX(100%);
+    transition: transform .2s ease-out;
+  }
+  li.swiped .swipe-actions {
+    transform: translateX(0);
+  }
+  .swipe-btn {
+    width: 60px;
+    border: none;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    -webkit-appearance: none;
+  }
+  .swipe-btn svg { width: 18px; height: 18px; }
+  .btn-alarm { background: #ff9500; }
+  .btn-alarm.active svg { color: #fff; }
+  .btn-edit { background: #007aff; }
+  .btn-delete { background: #ff3b30; width: 60px; }
+
+  /* Checkbox */
+  .check-btn {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #c7c7cc;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .2s;
+  }
+  .check-btn:active { transform: scale(.9); }
+  li.done .check-btn {
+    background: #34c759;
+    border-color: #34c759;
+  }
+  li.done .check-btn::after {
+    content: '';
+    width: 6px;
+    height: 10px;
+    border: 2px solid #fff;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg) translateY(-1px);
+  }
+  li.done { background: #e8f5e9; }
+  li.done .swipe-wrap { background: #e8f5e9; }
+  li.done .todo-text {
+    color: #2e7d32;
+  }
+  li.done .todo-time {
+    color: #81c784;
+  }
+
+  /* 内容 */
+  .todo-content { flex: 1; min-width: 0; }
+  .todo-text {
+    font-size: 17px;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+  .todo-time {
+    font-size: 13px;
+    color: #8e8e93;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .todo-time.has-alarm {
+    color: #ff9500;
+    font-weight: 500;
+  }
+  .todo-time.has-alarm::before {
+    content: '🔔';
+    font-size: 12px;
+    animation: bell-shake 2s ease-in-out infinite;
+  }
+  @keyframes bell-shake {
+    0%, 100% { transform: rotate(0); }
+    10%, 30%, 50% { transform: rotate(8deg); }
+    20%, 40% { transform: rotate(-8deg); }
+    60%, 100% { transform: rotate(0); }
+  }
+
+  /* 操作按钮 */
+  .todo-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .action-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-appearance: none;
+  }
+  .action-btn:active { background: #e5e5e5; }
+  .action-btn svg { width: 16px; height: 16px; }
+  .op-edit svg { color: #8e8e93; }
+  .op-alarm svg { color: #c7c7cc; }
+  .op-alarm.active svg { color: #ff9500; }
+
+  /* 编辑状态 */
+  .edit-input {
+    width: 100%;
+    padding: 0;
+    border: none;
+    font-size: 17px;
+    outline: none;
+    -webkit-appearance: none;
+    background: transparent;
+  }
+  .edit-time-input {
+    margin-top: 4px;
+    padding: 8px 10px;
+    border: 1.5px solid #ffc107;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    color: #333;
+    -webkit-appearance: none;
+    background: #fff;
+    width: 100%;
+    transition: all .2s;
+  }
+  .edit-time-input:focus {
+    border-color: #ff9800;
+    background: #fffdf7;
+  }
+
+  /* 时间选择弹窗 */
+  .time-picker-modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 1000;
+    display: none;
+    justify-content: center;
+    align-items: flex-end;
+    backdrop-filter: blur(2px);
+  }
+  .time-picker-modal.show {
+    display: flex;
+  }
+  .time-picker-box {
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    padding: 24px 20px calc(34px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: max(34px, calc(34px + env(safe-area-inset-bottom)));
+    width: 100%;
+    max-width: 500px;
+    animation: slideUp .3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .time-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .time-picker-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #000;
+  }
+  .time-picker-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f0f0f5;
+    border-radius: 50%;
+    font-size: 16px;
+    color: #007aff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-appearance: none;
+    font-weight: bold;
+  }
+  .time-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .time-quick-item {
+    padding: 14px 4px;
+    background: #f5f5f7;
+    border: 2px solid transparent;
+    border-radius: 14px;
+    font-size: 16px;
+    color: #333;
+    cursor: pointer;
+    -webkit-appearance: none;
+    text-align: center;
+    transition: all .2s;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 72px;
+  }
+  .time-quick-item:active {
+    transform: scale(0.95);
+    background: #ebebed;
+  }
+  .time-quick-item.selected {
+    background: #fff9e6;
+    border-color: #ffc107;
+    color: #000;
+    font-weight: 600;
+  }
+  .time-quick-item .label {
+    font-size: 12px;
+    color: #8e8e93;
+    margin-top: 4px;
+  }
+  .time-quick-item.selected .label {
+    color: #8e8e93;
+  }
+  .time-picker-custom {
+    position: relative;
+    margin-top: 8px;
+    padding-top: 24px;
+    border-top: 1px solid #f2f2f7;
+  }
+  .time-picker-custom-placeholder {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 24px; /* Matches padding-top of parent */
+    height: 56px; /* Matches input height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    color: #8e8e93;
+    pointer-events: none;
+    transition: opacity .2s;
+    z-index: 1;
+  }
+  .time-picker-custom-placeholder.hide {
+    opacity: 0;
+  }
+  .time-picker-custom input[type="datetime-local"] {
+    width: 100%;
+    height: 56px;
+    padding: 0;
+    border: 1px solid #e5e5ea;
+    border-radius: 12px;
+    font-size: 17px;
+    color: #000;
+    outline: none;
+    -webkit-appearance: none;
+    background: #fff;
+    position: relative;
+    display: block;
+    text-align: center;
+    line-height: 54px; /* For vertical centering */
+  }
+  .time-picker-custom input[type="datetime-local"]:focus {
+    border-color: #ffc107;
+  }
+  .time-picker-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+  }
+  .time-picker-btn {
+    flex: 1;
+    height: 52px;
+    border: none;
+    border-radius: 14px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-appearance: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .time-picker-btn.remove {
+    background: #fff;
+    color: #ff3b30;
+    border: 1px solid #ff3b30;
+  }
+  .time-picker-btn.cancel {
+    background: #f2f2f7;
+    color: #000;
+  }
+  .time-picker-btn.confirm {
+    background: #ffc107;
+    color: #000;
+  }
+  .time-picker-btn:active {
+    opacity: .7;
+    transform: scale(0.98);
+  }
+
+  /* 提醒弹窗 */
+  .modal-mask {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,.4);
+    z-index: 999;
+    justify-content: center;
+    align-items: center;
+  }
+  .modal-mask.show { display: flex; }
+  .modal-box {
+    background: #fff;
+    border-radius: 14px;
+    padding: 24px 20px 20px;
+    width: 280px;
+    text-align: center;
+    animation: pop .2s ease;
+  }
+  @keyframes pop {
+    from { transform: scale(.85); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .modal-box .bell {
+    font-size: 40px;
+    margin-bottom: 10px;
+  }
+  .modal-box h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .modal-box p {
+    font-size: 15px;
+    color: #8e8e93;
+    margin-bottom: 20px;
+    word-break: break-word;
+  }
+  .modal-box button {
+    width: 100%;
+    padding: 12px;
+    background: #007aff;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 17px;
+    font-weight: 500;
+    cursor: pointer;
+    -webkit-appearance: none;
+  }
+  .modal-box button:active { opacity: .8; }
+
+  /* 底部统计 - 适配iOS底部安全区域 */
+  .footer {
+    padding: 12px 16px calc(30px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: max(30px, calc(30px + env(safe-area-inset-bottom)));
+    text-align: center;
+    font-size: 13px;
+    color: #c7c7cc;
+    background: #f2f2f7;
+  }
+
+  /* iOS输入框优化 */
+  input, button, select, textarea {
+    -webkit-appearance: none;
+    border-radius: 0;
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+  }
+  input[type="text"], input[type="datetime-local"] {
+    -webkit-border-radius: 0;
+  }
+</style>
+</head>
+<body>
+
+  <div class="navbar">
+    <h1>待办事项</h1>
+    <div class="subtitle" id="subtitle"></div>
+  </div>
+
+  <div class="input-section">
+    <div class="input-row">
+      <input id="todoInput" type="text" placeholder="添加新待办…">
+      <button class="btn-add" onclick="addTodo()">添加</button>
+    </div>
+    <div class="time-section" id="addTimeSection">
+      <div class="time-quick-btns" id="quickTimeBtns"></div>
+      <div class="time-custom">
+        <button class="time-custom-btn" id="addTimeBtn">
+          <span class="icon">🕐</span>
+          <span id="addTimeBtnText">自定义提醒时间</span>
+          <input type="datetime-local" class="time-custom-input" id="addTimeInput">
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="list-section">
+    <ul id="todoList"></ul>
+  </div>
+
+  <div class="footer" id="footer"></div>
+
+  <div class="modal-mask" id="modal">
+    <div class="modal-box">
+      <div class="bell">&#128276;</div>
+      <h3>提醒</h3>
+      <p id="modalText"></p>
+      <button onclick="closeModal()">知道了</button>
+    </div>
+  </div>
+
+  <!-- 时间选择弹窗 -->
+  <div class="time-picker-modal" id="timePickerModal">
+    <div class="time-picker-box">
+      <div class="time-picker-header">
+        <span class="time-picker-title">选择提醒时间</span>
+        <button class="time-picker-close" onclick="closeTimePicker()">✕</button>
+      </div>
+      <div class="time-quick-grid" id="timeQuickGrid"></div>
+      <div class="time-picker-custom">
+        <span class="time-picker-custom-placeholder" id="pickerTimePlaceholder">自定义提醒时间</span>
+        <input type="datetime-local" id="pickerCustomTime">
+      </div>
+      <div class="time-picker-actions">
+        <button class="time-picker-btn remove" id="removeTimeBtn" onclick="removeTime()">删除提醒</button>
+        <button class="time-picker-btn cancel" onclick="closeTimePicker()">取消</button>
+        <button class="time-picker-btn confirm" onclick="confirmTimePicker()">确定</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  var input = document.getElementById('todoInput');
+  var list = document.getElementById('todoList');
+  var addTimeInput = document.getElementById('addTimeInput');
+  var STORAGE_KEY = 'todo_apple_v1';
+  var alarmTimer = null;
+  var selectedQuickTime = null;
+  var currentTimeEditLi = null;
+
+  // 快速时间选项
+  var quickTimes = [
+    { label: '10分钟后', minutes: 10 },
+    { label: '30分钟后', minutes: 30 },
+    { label: '1小时后', minutes: 60 },
+    { label: '2小时后', minutes: 120 },
+    { label: '明天上午', hours: 24, setHour: 9 },
+    { label: '明天下午', hours: 24, setHour: 14 },
+    { label: '明天晚上', hours: 24, setHour: 19 },
+    { label: '下周', days: 7, setHour: 9 }
+  ];
+
+  // 生成快速时间按钮
+  function initQuickTimeBtns() {
+    var container = document.getElementById('quickTimeBtns');
+    container.innerHTML = '';
+    quickTimes.forEach(function(item, idx) {
+      var btn = document.createElement('button');
+      btn.className = 'time-quick-btn';
+      btn.textContent = item.label;
+      btn.dataset.idx = idx;
+      btn.onclick = function() { selectQuickTime(idx, this); };
+      container.appendChild(btn);
+    });
+  }
+
+  function selectQuickTime(idx, btn) {
+    document.querySelectorAll('#quickTimeBtns .time-quick-btn').forEach(function(b) {
+      b.classList.remove('selected');
+    });
+    btn.classList.add('selected');
+    selectedQuickTime = idx;
+    addTimeInput.value = '';
+  }
+
+  function getQuickTimeValue(idx) {
+    var item = quickTimes[idx];
+    var d = new Date();
+    if (item.minutes) d.setMinutes(d.getMinutes() + item.minutes);
+    if (item.hours) d.setHours(d.getHours() + item.hours);
+    if (item.days) d.setDate(d.getDate() + item.days);
+    if (item.setHour) {
+      d.setHours(item.setHour, 0, 0, 0);
+    }
+    return d;
+  }
+
+  function toDateTimeLocalValue(d) {
+    return d.getFullYear() + '-' +
+      ('0' + (d.getMonth() + 1)).slice(-2) + '-' +
+      ('0' + d.getDate()).slice(-2) + 'T' +
+      ('0' + d.getHours()).slice(-2) + ':' +
+      ('0' + d.getMinutes()).slice(-2);
+  }
+
+  // 日期显示
+  (function() {
+    var d = new Date();
+    var week = ['周日','周一','周二','周三','周四','周五','周六'];
+    document.getElementById('subtitle').textContent =
+      (d.getMonth()+1) + '月' + d.getDate() + '日 ' + week[d.getDay()];
+  })();
+
+  initQuickTimeBtns();
+
+  function loadTodos() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    catch(e) { return []; }
+  }
+
+  function saveTodos() {
+    var items = [];
+    list.querySelectorAll('li').forEach(function(li) {
+      var textEl = li.querySelector('.todo-text');
+      var text = textEl ? textEl.textContent : '';
+      var timeEl = li.querySelector('.todo-time');
+      var time = timeEl && timeEl.dataset.time ? timeEl.dataset.time : '';
+      var done = li.classList.contains('done') ? 1 : 0;
+      items.push({ text: text, time: time, done: done });
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    updateFooter();
+    startAlarmCheck();
+  }
+
+  function updateFooter() {
+    var total = list.querySelectorAll('li').length;
+    var done = list.querySelectorAll('li.done').length;
+    document.getElementById('footer').textContent =
+      total ? (done + '/' + total + ' 已完成') : '';
+  }
+
+  function formatTime(isoStr) {
+    if (!isoStr) return '';
+    var d = new Date(isoStr);
+    var m = d.getMonth() + 1;
+    var day = d.getDate();
+    var h = ('0' + d.getHours()).slice(-2);
+    var min = ('0' + d.getMinutes()).slice(-2);
+    return m + '/' + day + ' ' + h + ':' + min;
+  }
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  var svgEdit = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+  var svgAlarm = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+
+  function renderTodo(item) {
+    var li = document.createElement('li');
+    if (item.done) li.classList.add('done');
+    var timeDisplay = item.time ? formatTime(item.time) : '';
+    var timeClass = item.time ? 'todo-time has-alarm' : 'todo-time';
+    var alarmActive = item.time ? ' active' : '';
+
+    li.innerHTML =
+      '<div class="swipe-wrap" data-x="0">' +
+        '<div class="todo-content">' +
+          '<div class="todo-text">' + escapeHtml(item.text) + '</div>' +
+          '<div class="' + timeClass + '" data-time="' + (item.time || '') + '">' +
+            (item.time ? timeDisplay : '') +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="swipe-actions">' +
+        '<button class="swipe-btn btn-alarm' + alarmActive + '" onclick="event.stopPropagation();openTimePickerForEdit(this)">' + svgAlarm + '</button>' +
+        '<button class="swipe-btn btn-edit" onclick="event.stopPropagation();editTodo(this)">' + svgEdit + '</button>' +
+        '<button class="swipe-btn btn-delete" onclick="event.stopPropagation();removeTodo(this)">删除</button>' +
+      '</div>';
+    list.appendChild(li);
+    bindSwipe(li);
+  }
+
+  function toggleDone(el) {
+    el.closest('li').classList.toggle('done');
+    saveTodos();
+  }
+
+  function addTodo() {
+    var text = input.value.trim();
+    if (!text) return;
+
+    var timeVal = '';
+    if (selectedQuickTime !== null) {
+      var d = getQuickTimeValue(selectedQuickTime);
+      timeVal = toDateTimeLocalValue(d);
+    } else if (addTimeInput.value) {
+      timeVal = addTimeInput.value;
+    }
+
+    renderTodo({ text: text, time: timeVal, done: 0 });
+    saveTodos();
+    input.value = '';
+    addTimeInput.value = '';
+    selectedQuickTime = null;
+    document.querySelectorAll('#quickTimeBtns .time-quick-btn').forEach(function(b) {
+      b.classList.remove('selected');
+    });
+    // 重置自定义时间按钮状态
+    var btn = document.getElementById('addTimeBtn');
+    var btnText = document.getElementById('addTimeBtnText');
+    if (btn && btnText) {
+      btnText.textContent = '自定义提醒时间';
+      btn.classList.remove('has-time');
+    }
+    input.focus();
+  }
+
+  function removeTodo(el) {
+    var li = el.closest('li');
+    li.querySelector('.swipe-wrap').style.transform = 'translateX(-100%)';
+    setTimeout(function() { li.remove(); saveTodos(); }, 200);
+  }
+
+  // 左滑显示操作
+  function bindSwipe(li) {
+    var wrap = li.querySelector('.swipe-wrap');
+    var actions = li.querySelector('.swipe-actions');
+    var startX = 0, startY = 0, dx = 0, isOpen = false, isTap = true, hasTouch = false;
+
+    wrap.addEventListener('touchstart', function(e) {
+      hasTouch = true;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      dx = 0;
+      isTap = true;
+      actions.style.transition = 'none';
+      closeAllSwipes(li);
+    });
+    wrap.addEventListener('touchmove', function(e) {
+      var moveX = e.touches[0].clientX - startX;
+      var moveY = e.touches[0].clientY - startY;
+      if (Math.abs(moveX) > 10 || Math.abs(moveY) > 10) isTap = false;
+      dx = moveX;
+      // 左滑时，操作区从右侧滑入
+      if (!isOpen && dx < 0) {
+        var show = Math.min(Math.abs(dx), 180);
+        actions.style.transform = 'translateX(' + (100 - show / 180 * 100) + '%)';
+      } else if (isOpen && dx > 0) {
+        var hide = Math.min(dx, 180);
+        actions.style.transform = 'translateX(' + (hide / 180 * 100) + '%)';
+      }
+    });
+    wrap.addEventListener('touchend', function() {
+      actions.style.transition = 'transform .2s ease-out';
+      if (isTap && Math.abs(dx) < 10) {
+        li.classList.toggle('done');
+        saveTodos();
+        closeAllSwipes(li);
+        return;
+      }
+      if (dx < -60) {
+        actions.style.transform = 'translateX(0)';
+        isOpen = true;
+        li.classList.add('swiped');
+      } else {
+        actions.style.transform = 'translateX(100%)';
+        isOpen = false;
+        li.classList.remove('swiped');
+      }
+      dx = 0;
+    });
+    // 桌面点击支持
+    wrap.addEventListener('click', function(e) {
+      if (hasTouch) { hasTouch = false; return; }
+      li.classList.toggle('done');
+      saveTodos();
+      closeAllSwipes(li);
+    });
+  }
+
+  function closeAllSwipes(exceptLi) {
+    document.querySelectorAll('li.swiped').forEach(function(li) {
+      if (li !== exceptLi) {
+        li.classList.remove('swiped');
+        var w = li.querySelector('.swipe-wrap');
+        if (w) w.style.transform = 'translateX(0)';
+        var actions = li.querySelector('.swipe-actions');
+        if (actions) actions.style.transform = 'translateX(100%)';
+      }
+    });
+  }
+
+  // 点击页面其他地方关闭滑动菜单
+  document.addEventListener('click', function(e) {
+    var swipedLi = document.querySelector('li.swiped');
+    if (swipedLi && !swipedLi.contains(e.target)) {
+      swipedLi.classList.remove('swiped');
+      var w = swipedLi.querySelector('.swipe-wrap');
+      if (w) w.style.transform = 'translateX(0)';
+      var actions = swipedLi.querySelector('.swipe-actions');
+      if (actions) actions.style.transform = 'translateX(100%)';
+    }
+  });
+
+  function editTodo(btn) {
+    var li = btn.closest('li');
+    var textEl = li.querySelector('.todo-text');
+    var oldText = textEl.textContent;
+
+    // 先关闭操作按钮
+    closeAllSwipes(null);
+    li.classList.remove('swiped');
+    var actions = li.querySelector('.swipe-actions');
+    if (actions) actions.style.transform = 'translateX(100%)';
+
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = 'edit-input';
+    inp.value = oldText;
+    textEl.replaceWith(inp);
+    inp.focus();
+    inp.setSelectionRange(inp.value.length, inp.value.length);
+
+    function finish() {
+      var v = inp.value.trim();
+      var div = document.createElement('div');
+      div.className = 'todo-text';
+      div.textContent = v || oldText;
+      inp.replaceWith(div);
+      if (v && v !== oldText) saveTodos();
+    }
+    inp.addEventListener('blur', finish);
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') inp.blur();
+      if (e.key === 'Escape') { inp.value = oldText; inp.blur(); }
+    });
+  }
+
+  // 时间选择弹窗
+  var pickerSelectedIdx = null;
+
+  function openTimePickerForEdit(btn) {
+    var li = btn.closest('li');
+    currentTimeEditLi = li;
+
+    // 初始化弹窗内容
+    var grid = document.getElementById('timeQuickGrid');
+    grid.innerHTML = '';
+    quickTimes.forEach(function(item, idx) {
+      var div = document.createElement('div');
+      div.className = 'time-quick-item';
+      div.dataset.idx = idx;
+      var d = getQuickTimeValue(idx);
+      div.innerHTML = '<div>' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + '</div><div class="label">' + item.label + '</div>';
+      div.onclick = function() { selectPickerTime(idx, this); };
+      grid.appendChild(div);
+    });
+
+    // 重置选择状态
+    pickerSelectedIdx = null;
+    document.getElementById('pickerCustomTime').value = '';
+    var placeholder = document.getElementById('pickerTimePlaceholder');
+    if (placeholder) placeholder.classList.remove('hide');
+
+    document.getElementById('timePickerModal').classList.add('show');
+  }
+
+  function selectPickerTime(idx, el) {
+    document.querySelectorAll('#timeQuickGrid .time-quick-item').forEach(function(item) {
+      item.classList.remove('selected');
+    });
+    el.classList.add('selected');
+    pickerSelectedIdx = idx;
+    document.getElementById('pickerCustomTime').value = '';
+  }
+
+  function closeTimePicker() {
+    document.getElementById('timePickerModal').classList.remove('show');
+    currentTimeEditLi = null;
+  }
+
+  function removeTime() {
+    if (!currentTimeEditLi) return;
+    var timeDiv = currentTimeEditLi.querySelector('.todo-time');
+    timeDiv.className = 'todo-time';
+    timeDiv.dataset.time = '';
+    timeDiv.textContent = '';
+    saveTodos();
+    closeTimePicker();
+  }
+
+  function confirmTimePicker() {
+    if (!currentTimeEditLi) return;
+
+    var timeVal = '';
+    if (pickerSelectedIdx !== null) {
+      var d = getQuickTimeValue(pickerSelectedIdx);
+      timeVal = toDateTimeLocalValue(d);
+    } else {
+      timeVal = document.getElementById('pickerCustomTime').value;
+    }
+
+    var timeDiv = currentTimeEditLi.querySelector('.todo-time');
+    if (timeVal) {
+      timeDiv.className = 'todo-time has-alarm';
+      timeDiv.dataset.time = timeVal;
+      timeDiv.textContent = formatTime(timeVal);
+    } else {
+      timeDiv.className = 'todo-time';
+      timeDiv.dataset.time = '';
+      timeDiv.textContent = '';
+    }
+
+    saveTodos();
+    closeTimePicker();
+  }
+
+  // 点击遮罩关闭
+  document.getElementById('timePickerModal').addEventListener('click', function(e) {
+    if (e.target === this) closeTimePicker();
+  });
+
+  // 添加时自定义时间输入清除快速选择
+  addTimeInput.addEventListener('input', function() {
+    selectedQuickTime = null;
+    document.querySelectorAll('#quickTimeBtns .time-quick-btn').forEach(function(b) {
+      b.classList.remove('selected');
+    });
+    // 更新按钮文本和样式
+    var btn = document.getElementById('addTimeBtn');
+    var btnText = document.getElementById('addTimeBtnText');
+    if (this.value) {
+      var d = new Date(this.value);
+      btnText.textContent = (d.getMonth() + 1) + '/' + d.getDate() + ' ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+      btn.classList.add('has-time');
+    } else {
+      btnText.textContent = '自定义提醒时间';
+      btn.classList.remove('has-time');
+    }
+  });
+
+  // 时间选择弹窗占位符控制
+  document.getElementById('pickerCustomTime').addEventListener('input', function() {
+    pickerSelectedIdx = null;
+    document.querySelectorAll('#timeQuickGrid .time-quick-item').forEach(function(item) {
+      item.classList.remove('selected');
+    });
+    var placeholder = document.getElementById('pickerTimePlaceholder');
+    if (placeholder) {
+      placeholder.classList.toggle('hide', !!this.value);
+    }
+  });
+
+  // 打开编辑时间弹窗时重置占位符
+  function resetPlaceholders() {
+    var pickerPh = document.getElementById('pickerTimePlaceholder');
+    if (pickerPh) pickerPh.classList.remove('hide');
+  }
+
+  // 铃声 - 悦耳的提醒音
+  var alarmAudioCtx = null;
+  function playAlarm() {
+    try {
+      alarmAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      // 旋律：C5-E5-G5-C6 上升和弦，温暖悦耳
+      var notes = [
+        { freq: 523.25, start: 0, dur: 0.3 },      // C5
+        { freq: 659.25, start: 0.15, dur: 0.3 },   // E5
+        { freq: 783.99, start: 0.3, dur: 0.3 },    // G5
+        { freq: 1046.50, start: 0.45, dur: 0.4 },  // C6
+        // 第二遍稍高
+        { freq: 587.33, start: 1.0, dur: 0.25 },   // D5
+        { freq: 739.99, start: 1.15, dur: 0.25 },  // F#5
+        { freq: 880.00, start: 1.3, dur: 0.35 },   // A5
+        { freq: 1174.66, start: 1.45, dur: 0.5 },  // D6
+      ];
+
+      notes.forEach(function(note) {
+        // 主音
+        var osc = alarmAudioCtx.createOscillator();
+        var gain = alarmAudioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = note.freq;
+        gain.gain.setValueAtTime(0, alarmAudioCtx.currentTime + note.start);
+        gain.gain.linearRampToValueAtTime(0.3, alarmAudioCtx.currentTime + note.start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.15, alarmAudioCtx.currentTime + note.start + note.dur * 0.5);
+        gain.gain.exponentialRampToValueAtTime(0.01, alarmAudioCtx.currentTime + note.start + note.dur);
+        osc.connect(gain);
+        gain.connect(alarmAudioCtx.destination);
+        osc.start(alarmAudioCtx.currentTime + note.start);
+        osc.stop(alarmAudioCtx.currentTime + note.start + note.dur + 0.05);
+
+        // 泛音（更丰富的音色）
+        var osc2 = alarmAudioCtx.createOscillator();
+        var gain2 = alarmAudioCtx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.value = note.freq * 2;
+        gain2.gain.setValueAtTime(0, alarmAudioCtx.currentTime + note.start);
+        gain2.gain.linearRampToValueAtTime(0.08, alarmAudioCtx.currentTime + note.start + 0.02);
+        gain2.gain.exponentialRampToValueAtTime(0.01, alarmAudioCtx.currentTime + note.start + note.dur * 0.7);
+        osc2.connect(gain2);
+        gain2.connect(alarmAudioCtx.destination);
+        osc2.start(alarmAudioCtx.currentTime + note.start);
+        osc2.stop(alarmAudioCtx.currentTime + note.start + note.dur + 0.05);
+      });
+
+      // 1.8秒后循环播放
+      setTimeout(function() {
+        if (alarmAudioCtx && alarmAudioCtx.state !== 'closed') {
+          playAlarm();
+        }
+      }, 2000);
+
+    } catch(e) {
+      console.log('Audio play error:', e);
+    }
+  }
+
+  function startAlarmCheck() {
+    if (alarmTimer) clearInterval(alarmTimer);
+    alarmTimer = setInterval(function() {
+      var now = new Date().getTime();
+      list.querySelectorAll('li').forEach(function(li) {
+        var td = li.querySelector('.todo-time');
+        if (!td || !td.dataset.time) return;
+        var diff = new Date(td.dataset.time).getTime() - now;
+        if (diff <= 30000 && diff >= -30000 && !li.dataset.reminded) {
+          li.dataset.reminded = '1';
+          showReminder(li.querySelector('.todo-text').textContent);
+        }
+      });
+    }, 10000);
+  }
+
+  function showReminder(text) {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('待办提醒', { body: text });
+    }
+    playAlarm();
+    document.getElementById('modalText').textContent = text;
+    document.getElementById('modal').classList.add('show');
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('show');
+    if (alarmAudioCtx) {
+      try { alarmAudioCtx.close(); } catch(e) {}
+      alarmAudioCtx = null;
+    }
+  }
+
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+
+  // 加载
+  loadTodos().forEach(function(item) {
+    if (typeof item === 'string') renderTodo({ text: item, time: '', done: 0 });
+    else renderTodo({ text: item.text, time: item.time || '', done: item.done || 0 });
+  });
+  updateFooter();
+  startAlarmCheck();
+
+  input.addEventListener('keydown', function(e) { if (e.key === 'Enter') addTodo(); });
+
+  // iOS防止双击缩放
+  document.addEventListener('touchend', function(e) {
+    var now = Date.now();
+    if (now - (this.lastTouch || 0) < 300) {
+      e.preventDefault();
+    }
+    this.lastTouch = now;
+  }, { passive: false });
+
+  // iOS被动事件监听器
+  document.addEventListener('touchmove', function() {}, { passive: true });
+
+  // 注册Service Worker（离线支持）
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(function() {});
+  }
+</script>
+</body>
+</html>
