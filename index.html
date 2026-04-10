@@ -823,7 +823,9 @@
     renderTodo({ text: text, time: timeVal, done: 0 });
     saveTodos();
     input.value = '';
+    input.blur(); // 收起手机键盘
     addTimeInput.value = '';
+    if (document.activeElement) document.activeElement.blur(); // 确保所有输入框失焦
     selectedQuickTime = null;
     document.querySelectorAll('#quickTimeBtns .time-quick-btn').forEach(function(b) {
       b.classList.remove('selected');
