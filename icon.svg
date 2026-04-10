@@ -1,58 +1,98 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
-<defs>
-<radialGradient id="bgRad" cx="0.35" cy="0.35" r="1.1">
-<stop offset="0" stop-color="#fafafa"/>
-<stop offset="0.5" stop-color="#f0f0f0"/>
-<stop offset="0.8" stop-color="#e6e6e6"/>
-<stop offset="1" stop-color="#dddddd"/>
-</radialGradient>
-<pattern id="bgMosaic" width="12" height="12" patternUnits="userSpaceOnUse">
-<rect width="12" height="12" fill="none"/>
-<rect x="0" y="0" width="6" height="6" fill="#ffffff" opacity=".04"/>
-<rect x="6" y="6" width="6" height="6" fill="#000000" opacity=".02"/>
-</pattern>
-<pattern id="catMosaic" width="8" height="8" patternUnits="userSpaceOnUse">
-<rect width="8" height="8" fill="none"/>
-<rect x="0" y="0" width="6" height="6" fill="#c6c6c6"/>
-</pattern>
-<pattern id="fishMosaic" width="8" height="8" patternUnits="userSpaceOnUse">
-<rect width="8" height="8" fill="none"/>
-<rect x="0" y="0" width="6" height="6" fill="#f2f2f2"/>
-</pattern>
-<linearGradient id="catShade" x1="0" y1="0" x2="0" y2="1">
-<stop offset="0" stop-color="#f0f0f0"/>
-<stop offset="1" stop-color="#9a9a9a"/>
-</linearGradient>
-<linearGradient id="fishShade" x1="0" y1="0" x2="1" y2="1">
-<stop offset="0" stop-color="#ffffff"/>
-<stop offset="1" stop-color="#9b9b9b"/>
-</linearGradient>
-</defs>
-<rect width="180" height="180" rx="40" fill="url(#bgRad)"/>
-<rect width="180" height="180" rx="40" fill="url(#bgMosaic)"/>
-<g transform="translate(0,2)">
-<g>
-<circle cx="90" cy="92" r="52" fill="url(#catMosaic)"/>
-<circle cx="90" cy="92" r="52" fill="url(#catShade)" opacity=".22"/>
-<path d="M58 48 L72 34 L78 54 Z" fill="url(#catMosaic)"/>
-<path d="M122 48 L108 34 L102 54 Z" fill="url(#catMosaic)"/>
-<rect x="55" y="98" width="26" height="22" rx="8" fill="url(#catMosaic)"/>
-<rect x="99" y="98" width="26" height="22" rx="8" fill="url(#catMosaic)"/>
-<rect x="55" y="98" width="26" height="22" rx="8" fill="url(#catShade)" opacity=".25"/>
-<rect x="99" y="98" width="26" height="22" rx="8" fill="url(#catShade)" opacity=".25"/>
-<rect x="70" y="78" width="12" height="12" fill="#1f1f1f"/>
-<rect x="98" y="78" width="12" height="12" fill="#1f1f1f"/>
-<rect x="88" y="94" width="4" height="6" fill="#666666"/>
-</g>
-<g>
-<ellipse cx="92" cy="108" rx="44" ry="18" fill="url(#fishMosaic)"/>
-<ellipse cx="92" cy="108" rx="44" ry="18" fill="url(#fishShade)" opacity=".22"/>
-<ellipse cx="92" cy="108" rx="44" ry="18" fill="none" stroke="#111111" stroke-width="2"/>
-<path d="M136 108 L152 98 L152 118 Z" fill="url(#fishMosaic)" stroke="#111111" stroke-width="2"/>
-<circle cx="74" cy="108" r="3.5" fill="#000000"/>
-<path d="M112 103 Q118 108 112 113" stroke="#222222" stroke-width="3" fill="none"/>
-<path d="M56 103 Q92 94 128 104" stroke="rgba(255,255,255,0.75)" stroke-width="1.5" fill="none" opacity=".8"/>
-</g>
-</g>
-<rect x="24" y="24" width="132" height="132" rx="28" fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="2"/>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2d2d5a"/>
+      <stop offset="100%" stop-color="#1a1a3e"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="180" height="180" rx="40" fill="url(#bg)"/>
+
+  <!-- 猫身体主体 -->
+  <ellipse cx="90" cy="88" rx="48" ry="52" fill="#e8e8f0"/>
+
+  <!-- 猫身体马赛克块 -->
+  <g fill="#f5f5fa" opacity="0.7">
+    <rect x="60" y="55" width="10" height="10" rx="1"/>
+    <rect x="75" y="50" width="10" height="10" rx="1"/>
+    <rect x="95" y="52" width="10" height="10" rx="1"/>
+    <rect x="110" y="58" width="10" height="10" rx="1"/>
+    <rect x="55" y="75" width="10" height="10" rx="1"/>
+    <rect x="115" y="80" width="10" height="10" rx="1"/>
+    <rect x="52" y="95" width="10" height="10" rx="1"/>
+    <rect x="118" y="100" width="10" height="10" rx="1"/>
+  </g>
+  <g fill="#d0d0e0" opacity="0.8">
+    <rect x="70" y="70" width="10" height="10" rx="1"/>
+    <rect x="100" y="75" width="10" height="10" rx="1"/>
+    <rect x="65" y="100" width="10" height="10" rx="1"/>
+    <rect x="105" y="95" width="10" height="10" rx="1"/>
+    <rect x="80" y="105" width="10" height="10" rx="1"/>
+    <rect x="95" y="110" width="10" height="10" rx="1"/>
+  </g>
+  <g fill="#c5c5d8" opacity="0.6">
+    <rect x="85" y="65" width="10" height="10" rx="1"/>
+    <rect x="75" y="85" width="10" height="10" rx="1"/>
+    <rect x="90" y="90" width="10" height="10" rx="1"/>
+  </g>
+
+  <!-- 猫耳朵 - 圆润风格 -->
+  <ellipse cx="62" cy="38" rx="18" ry="22" fill="#e8e8f0"/>
+  <ellipse cx="62" cy="36" rx="10" ry="14" fill="#ccc"/>
+  <ellipse cx="118" cy="38" rx="18" ry="22" fill="#e8e8f0"/>
+  <ellipse cx="118" cy="36" rx="10" ry="14" fill="#ccc"/>
+
+  <!-- 猫眼 - 竖瞳 -->
+  <ellipse cx="75" cy="68" rx="10" ry="12" fill="#2d2d5a"/>
+  <ellipse cx="75" cy="68" rx="3" ry="10" fill="#aaa"/>
+  <ellipse cx="105" cy="68" rx="10" ry="12" fill="#2d2d5a"/>
+  <ellipse cx="105" cy="68" rx="3" ry="10" fill="#aaa"/>
+
+  <!-- 猫鼻 - 圆润 -->
+  <ellipse cx="90" cy="84" rx="6" ry="4" fill="#888"/>
+
+  <!-- 猫嘴 -->
+  <path d="M90 89 L90 93" stroke="#666" stroke-width="2" stroke-linecap="round"/>
+  <path d="M82 96 Q90 102 98 96" stroke="#666" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- 胡须 -->
+  <g stroke="#aaa" stroke-width="2" stroke-linecap="round">
+    <line x1="45" y1="78" x2="68" y2="82"/>
+    <line x1="45" y1="88" x2="68" y2="88"/>
+    <line x1="45" y1="98" x2="68" y2="94"/>
+    <line x1="135" y1="78" x2="112" y2="82"/>
+    <line x1="135" y1="88" x2="112" y2="88"/>
+    <line x1="135" y1="98" x2="112" y2="94"/>
+  </g>
+
+  <!-- 鱼主体 -->
+  <ellipse cx="90" cy="125" rx="36" ry="18" fill="#fbbf24"/>
+
+  <!-- 鱼马赛克块 -->
+  <g fill="#fcd34d" opacity="0.8">
+    <rect x="62" y="118" width="10" height="10" rx="1"/>
+    <rect x="82" y="115" width="10" height="10" rx="1"/>
+    <rect x="102" y="120" width="10" height="10" rx="1"/>
+  </g>
+  <g fill="#f59e0b" opacity="0.8">
+    <rect x="72" y="125" width="10" height="10" rx="1"/>
+    <rect x="92" y="128" width="10" height="10" rx="1"/>
+  </g>
+  <g fill="#fde68a" opacity="0.7">
+    <rect x="58" y="125" width="8" height="8" rx="1"/>
+    <rect x="88" y="118" width="8" height="8" rx="1"/>
+  </g>
+
+  <!-- 鱼尾 -->
+  <path d="M126 125 L152 108 L152 142 Z" fill="#f97316"/>
+  <rect x="138" y="115" width="8" height="8" rx="1" fill="#fbbf24" opacity="0.6"/>
+  <rect x="140" y="128" width="8" height="8" rx="1" fill="#ea580c" opacity="0.5"/>
+
+  <!-- 鱼眼 -->
+  <circle cx="65" cy="123" r="5" fill="#2d2d5a"/>
+
+  <!-- 猫爪抱鱼 -->
+  <ellipse cx="56" cy="122" rx="14" ry="10" fill="#e8e8f0"/>
+  <ellipse cx="124" cy="122" rx="14" ry="10" fill="#e8e8f0"/>
+
 </svg>
