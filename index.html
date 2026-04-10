@@ -837,7 +837,6 @@
       btnText.textContent = '自定义提醒时间';
       btn.classList.remove('has-time');
     }
-    input.focus();
   }
 
   function removeTodo(el) {
@@ -1084,9 +1083,32 @@
 
   // 铃声 - 悦耳的提醒音
   var alarmAudioCtx = null;
-  function playAlarm() {
+  var audioUnlocked = false;
+
+  // 解锁音频（需要用户交互）
+  function unlockAudio() {
+    if (audioUnlocked) return;
     try {
       alarmAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (alarmAudioCtx.state === 'suspended') {
+        alarmAudioCtx.resume();
+      }
+      audioUnlocked = true;
+    } catch(e) {}
+  }
+
+  // 用户首次点击时解锁音频
+  document.addEventListener('click', unlockAudio, { once: true });
+  document.addEventListener('touchstart', unlockAudio, { once: true });
+
+  function playAlarm() {
+    try {
+      if (!alarmAudioCtx || alarmAudioCtx.state === 'closed') {
+        alarmAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (alarmAudioCtx.state === 'suspended') {
+        alarmAudioCtx.resume();
+      }
       // 旋律：C5-E5-G5-C6 上升和弦，温暖悦耳
       var notes = [
         { freq: 523.25, start: 0, dur: 0.3 },      // C5
@@ -1143,27 +1165,57 @@
 
   function startAlarmCheck() {
     if (alarmTimer) clearInterval(alarmTimer);
-    alarmTimer = setInterval(function() {
+
+    function checkAlarms() {
       var now = new Date().getTime();
       list.querySelectorAll('li').forEach(function(li) {
         var td = li.querySelector('.todo-time');
         if (!td || !td.dataset.time) return;
         var diff = new Date(td.dataset.time).getTime() - now;
-        if (diff <= 30000 && diff >= -30000 && !li.dataset.reminded) {
+        // 扩大检查范围到5分钟，确保后台回来后能触发
+        if (diff <= 300000 && diff >= -30000 && !li.dataset.reminded) {
           li.dataset.reminded = '1';
           showReminder(li.querySelector('.todo-text').textContent);
         }
       });
-    }, 10000);
+    }
+
+    // 每5秒检查一次
+    alarmTimer = setInterval(checkAlarms, 5000);
+    checkAlarms(); // 立即执行一次
+
+    // 页面重新可见时立即检查（解决后台不触发的问题）
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden) {
+        checkAlarms();
+      }
+    });
   }
 
   function showReminder(text) {
+    // 先解锁音频
+    unlockAudio();
+
+    // 发送通知
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('待办提醒', { body: text });
+      new Notification('待办提醒', {
+        body: text,
+        requireInteraction: true, // 需要用户交互才消失
+        vibrate: [200, 100, 200]  // 震动模式
+      });
     }
+
+    // 手机震动
+    if (navigator.vibrate) {
+      navigator.vibrate([200, 100, 200, 100, 200]);
+    }
+
     playAlarm();
     document.getElementById('modalText').textContent = text;
     document.getElementById('modal').classList.add('show');
+
+    // 尝试让页面获得焦点（从后台切换回来时）
+    if (window.focus) window.focus();
   }
 
   function closeModal() {
