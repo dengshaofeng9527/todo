@@ -229,6 +229,7 @@
   .btn-alarm.active svg { color: #fff; }
   .btn-edit { background: #007aff; }
   .btn-delete { background: #ff3b30; width: 60px; }
+  .btn-calendar { background: #34c759; width: 50px; font-size: 11px; }
 
   /* Checkbox */
   .check-btn {
@@ -796,6 +797,7 @@
       '</div>' +
       '<div class="swipe-actions">' +
         '<button class="swipe-btn btn-alarm' + alarmActive + '" onclick="event.stopPropagation();openTimePickerForEdit(this)">' + svgAlarm + '</button>' +
+        '<button class="swipe-btn btn-calendar" onclick="event.stopPropagation();addToCalendar(this)">日历</button>' +
         '<button class="swipe-btn btn-edit" onclick="event.stopPropagation();editTodo(this)">' + svgEdit + '</button>' +
         '<button class="swipe-btn btn-delete" onclick="event.stopPropagation();removeTodo(this)">删除</button>' +
       '</div>';
@@ -843,6 +845,71 @@
     var li = el.closest('li');
     li.querySelector('.swipe-wrap').style.transform = 'translateX(-100%)';
     setTimeout(function() { li.remove(); saveTodos(); }, 200);
+  }
+
+  // 添加到系统日历
+  function addToCalendar(el) {
+    var li = el.closest('li');
+    var textEl = li.querySelector('.todo-text');
+    var timeEl = li.querySelector('.todo-time');
+    var title = textEl ? textEl.textContent : '待办事项';
+    var time = timeEl && timeEl.dataset.time ? timeEl.dataset.time : null;
+
+    if (!time) {
+      alert('请先设置提醒时间');
+      return;
+    }
+
+    var d = new Date(time);
+    var end = new Date(d.getTime() + 30 * 60 * 1000); // 30分钟后结束
+
+    // 格式化为 ICS 格式
+    var pad = function(n) { return n < 10 ? '0' + n : n; };
+    var formatDate = function(date) {
+      return date.getFullYear() +
+             pad(date.getMonth() + 1) +
+             pad(date.getDate()) + 'T' +
+             pad(date.getHours()) +
+             pad(date.getMinutes()) +
+             pad(date.getSeconds());
+    };
+
+    var startStr = formatDate(d);
+    var endStr = formatDate(end);
+    var uid = Date.now() + '@todo-app';
+    var now = formatDate(new Date());
+
+    var ics = 'BEGIN:VCALENDAR\n' +
+              'VERSION:2.0\n' +
+              'PRODID:-//Todo App//CN\n' +
+              'BEGIN:VEVENT\n' +
+              'UID:' + uid + '\n' +
+              'DTSTAMP:' + now + '\n' +
+              'DTSTART:' + startStr + '\n' +
+              'DTEND:' + endStr + '\n' +
+              'SUMMARY:' + title + '\n' +
+              'DESCRIPTION:待办事项提醒\n' +
+              'BEGIN:VALARM\n' +
+              'TRIGGER:-PT0M\n' +
+              'ACTION:DISPLAY\n' +
+              'DESCRIPTION:提醒\n' +
+              'END:VALARM\n' +
+              'END:VEVENT\n' +
+              'END:VCALENDAR';
+
+    // 下载 ICS 文件，系统会自动识别并导入日历
+    var blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'todo-' + Date.now() + '.ics';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    // 关闭滑动菜单
+    closeAllSwipes(null);
   }
 
   // 左滑显示操作
