@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+<defs>
+<radialGradient id="bgRad" cx="0.35" cy="0.35" r="1.1">
+<stop offset="0" stop-color="#fafafa"/>
+<stop offset="0.5" stop-color="#f0f0f0"/>
+<stop offset="0.8" stop-color="#e6e6e6"/>
+<stop offset="1" stop-color="#dddddd"/>
+</radialGradient>
+<pattern id="bgMosaic" width="12" height="12" patternUnits="userSpaceOnUse">
+<rect width="12" height="12" fill="none"/>
+<rect x="0" y="0" width="6" height="6" fill="#ffffff" opacity=".04"/>
+<rect x="6" y="6" width="6" height="6" fill="#000000" opacity=".02"/>
+</pattern>
+<pattern id="catMosaic" width="8" height="8" patternUnits="userSpaceOnUse">
+<rect width="8" height="8" fill="none"/>
+<rect x="0" y="0" width="6" height="6" fill="#c6c6c6"/>
+</pattern>
+<pattern id="fishMosaic" width="8" height="8" patternUnits="userSpaceOnUse">
+<rect width="8" height="8" fill="none"/>
+<rect x="0" y="0" width="6" height="6" fill="#f2f2f2"/>
+</pattern>
+<linearGradient id="catShade" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#f0f0f0"/>
+<stop offset="1" stop-color="#9a9a9a"/>
+</linearGradient>
+<linearGradient id="fishShade" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#ffffff"/>
+<stop offset="1" stop-color="#9b9b9b"/>
+</linearGradient>
+</defs>
+<rect width="180" height="180" rx="40" fill="url(#bgRad)"/>
+<rect width="180" height="180" rx="40" fill="url(#bgMosaic)"/>
+<g transform="translate(0,2)">
+<g>
+<circle cx="90" cy="92" r="52" fill="url(#catMosaic)"/>
+<circle cx="90" cy="92" r="52" fill="url(#catShade)" opacity=".22"/>
+<path d="M58 48 L72 34 L78 54 Z" fill="url(#catMosaic)"/>
+<path d="M122 48 L108 34 L102 54 Z" fill="url(#catMosaic)"/>
+<rect x="55" y="98" width="26" height="22" rx="8" fill="url(#catMosaic)"/>
+<rect x="99" y="98" width="26" height="22" rx="8" fill="url(#catMosaic)"/>
+<rect x="55" y="98" width="26" height="22" rx="8" fill="url(#catShade)" opacity=".25"/>
+<rect x="99" y="98" width="26" height="22" rx="8" fill="url(#catShade)" opacity=".25"/>
+<rect x="70" y="78" width="12" height="12" fill="#1f1f1f"/>
+<rect x="98" y="78" width="12" height="12" fill="#1f1f1f"/>
+<rect x="88" y="94" width="4" height="6" fill="#666666"/>
+</g>
+<g>
+<ellipse cx="92" cy="108" rx="44" ry="18" fill="url(#fishMosaic)"/>
+<ellipse cx="92" cy="108" rx="44" ry="18" fill="url(#fishShade)" opacity=".22"/>
+<ellipse cx="92" cy="108" rx="44" ry="18" fill="none" stroke="#111111" stroke-width="2"/>
+<path d="M136 108 L152 98 L152 118 Z" fill="url(#fishMosaic)" stroke="#111111" stroke-width="2"/>
+<circle cx="74" cy="108" r="3.5" fill="#000000"/>
+<path d="M112 103 Q118 108 112 113" stroke="#222222" stroke-width="3" fill="none"/>
+<path d="M56 103 Q92 94 128 104" stroke="rgba(255,255,255,0.75)" stroke-width="1.5" fill="none" opacity=".8"/>
+</g>
+</g>
+<rect x="24" y="24" width="132" height="132" rx="28" fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="2"/>
+</svg>
