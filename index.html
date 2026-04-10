@@ -211,10 +211,10 @@
     transform: translateX(0);
   }
   .swipe-btn {
-    width: 60px;
+    width: 55px;
     border: none;
     color: #fff;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
     cursor: pointer;
     display: flex;
@@ -228,8 +228,8 @@
   .btn-alarm { background: #ff9500; }
   .btn-alarm.active svg { color: #fff; }
   .btn-edit { background: #007aff; }
-  .btn-delete { background: #ff3b30; width: 60px; }
-  .btn-calendar { background: #34c759; width: 50px; font-size: 11px; }
+  .btn-delete { background: #ff3b30; }
+  .btn-calendar { background: #34c759; font-size: 11px; }
 
   /* Checkbox */
   .check-btn {
@@ -910,6 +910,13 @@
 
     // 关闭滑动菜单
     closeAllSwipes(null);
+
+    // 提示用户
+    setTimeout(function() {
+      if (confirm('已下载日历文件！\n\n请按以下步骤添加：\n1. 打开"文件"App\n2. 找到下载的 .ics 文件\n3. 点击打开即可导入日历\n\n是否查看帮助？')) {
+        // 用户确认后不做额外操作，已有关闭逻辑
+      }
+    }, 100);
   }
 
   // 左滑显示操作
@@ -934,11 +941,11 @@
       dx = moveX;
       // 左滑时，操作区从右侧滑入
       if (!isOpen && dx < 0) {
-        var show = Math.min(Math.abs(dx), 180);
-        actions.style.transform = 'translateX(' + (100 - show / 180 * 100) + '%)';
+        var show = Math.min(Math.abs(dx), 220);
+        actions.style.transform = 'translateX(' + (100 - show / 220 * 100) + '%)';
       } else if (isOpen && dx > 0) {
-        var hide = Math.min(dx, 180);
-        actions.style.transform = 'translateX(' + (hide / 180 * 100) + '%)';
+        var hide = Math.min(dx, 220);
+        actions.style.transform = 'translateX(' + (hide / 220 * 100) + '%)';
       }
     });
     wrap.addEventListener('touchend', function() {
