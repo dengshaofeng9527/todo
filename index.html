@@ -44,7 +44,43 @@
     margin-top: 2px;
   }
 
-  /* 输入区 */
+  /* Tab 切换 */
+  .tab-bar {
+    display: flex;
+    background: #fff;
+    border-bottom: 1px solid #e5e5e5;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: none;
+    font-size: 16px;
+    font-weight: 500;
+    color: #8e8e93;
+    cursor: pointer;
+    -webkit-appearance: none;
+    position: relative;
+  }
+  .tab-btn.active {
+    color: #007aff;
+  }
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 3px;
+    background: #007aff;
+    border-radius: 2px;
+  }
+
+  /* 待办列表 */
+  .todo-section {
+    display: block;
+  }
   .input-section {
     padding: 12px 16px;
     border-bottom: 1px solid #e5e5e5;
@@ -80,7 +116,6 @@
   }
   .btn-add:active { opacity: .7; }
 
-  /* 列表 */
   .list-section {
     overflow: hidden;
     background: #fff;
@@ -104,7 +139,6 @@
   }
   li:last-child { border-bottom: none; }
 
-  /* 滑动容器 */
   .swipe-wrap {
     display: flex;
     align-items: flex-start;
@@ -120,12 +154,9 @@
     background: #fff;
     margin: 0 -16px;
     padding: 12px 16px;
-    position: relative;
-    z-index: 2;
   }
   li.done .swipe-wrap { background: #e8f5e9; }
 
-  /* 滑动操作区 */
   .swipe-actions {
     position: absolute;
     right: 0;
@@ -136,9 +167,7 @@
     transform: translateX(100%);
     transition: transform .2s ease-out;
   }
-  li.swiped .swipe-actions {
-    transform: translateX(0);
-  }
+  li.swiped .swipe-actions { transform: translateX(0); }
   .swipe-btn {
     width: 60px;
     border: none;
@@ -157,7 +186,6 @@
   .btn-edit { background: #007aff; }
   .btn-delete { background: #ff3b30; }
 
-  /* Checkbox */
   .check-btn {
     width: 22px;
     height: 22px;
@@ -189,11 +217,8 @@
   }
   li.done { background: #e8f5e9; }
   li.done .swipe-wrap { background: #e8f5e9; }
-  li.done .todo-text {
-    color: #2e7d32;
-  }
+  li.done .todo-text { color: #2e7d32; }
 
-  /* 内容 */
   .todo-content { flex: 1; min-width: 0; }
   .todo-text {
     font-size: 17px;
@@ -201,7 +226,6 @@
     word-break: break-word;
   }
 
-  /* 编辑状态 */
   .edit-input {
     width: 100%;
     padding: 0;
@@ -210,6 +234,333 @@
     outline: none;
     -webkit-appearance: none;
     background: transparent;
+  }
+
+  /* 打卡模块 */
+  .checkin-section {
+    display: none;
+    padding: 12px;
+  }
+  .checkin-section.active {
+    display: block;
+  }
+  .todo-section.active {
+    display: block;
+  }
+  .todo-section:not(.active) {
+    display: none;
+  }
+
+  /* 月份导航 */
+  .month-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+  }
+  .month-nav-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: #f5f5f7;
+    border-radius: 50%;
+    font-size: 18px;
+    color: #007aff;
+    cursor: pointer;
+    -webkit-appearance: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .month-nav-btn:active { background: #e5e5ea; }
+  .month-nav-title {
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  /* 打卡表格 */
+  .checkin-table-wrap {
+    background: #fff;
+    border-radius: 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .checkin-table {
+    min-width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .checkin-table th, .checkin-table td {
+    padding: 8px 4px;
+    text-align: center;
+    border: 1px solid #e5e5e5;
+    min-width: 32px;
+  }
+  .checkin-table th {
+    background: #f5f5f7;
+    font-weight: 500;
+    color: #8e8e93;
+    font-size: 11px;
+  }
+  .checkin-table th.task-name {
+    text-align: left;
+    padding-left: 12px;
+    min-width: 80px;
+  }
+  .checkin-table td.task-name {
+    text-align: left;
+    padding-left: 12px;
+    font-weight: 500;
+  }
+  .checkin-table td.task-name .time {
+    font-size: 11px;
+    color: #8e8e93;
+    font-weight: normal;
+  }
+  .checkin-table td.task-name .status-tag {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+  }
+  .status-tag.disabled {
+    background: #f5f5f7;
+    color: #8e8e93;
+  }
+  .checkin-table td.cell {
+    cursor: pointer;
+    font-size: 16px;
+  }
+  .checkin-table td.cell.future {
+    background: #f9f9f9;
+    color: #c7c7cc;
+  }
+  .checkin-table td.cell.past {
+    background: #fafafa;
+  }
+  .checkin-table td.cell.today {
+    background: #fff8e1;
+  }
+  .checkin-table td.cell.checked {
+    background: #e8f5e9;
+  }
+  .checkin-table td.cell.has-note {
+    background: #fff3e0;
+  }
+  .checkin-table td.cell.overdue {
+    background: #ffebee;
+  }
+  .checkin-table td.cell.disabled-task {
+    background: #f5f5f5;
+    color: #c7c7cc;
+  }
+
+  /* 任务管理按钮 */
+  .task-manage-btn {
+    position: fixed;
+    right: 16px;
+    bottom: calc(80px + env(safe-area-inset-bottom));
+    width: 56px;
+    height: 56px;
+    background: #007aff;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    font-size: 28px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    box-shadow: 0 4px 12px rgba(0,122,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+  }
+  .task-manage-btn:active { transform: scale(0.95); }
+
+  /* 任务管理弹窗 */
+  .modal-mask {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,.4);
+    z-index: 999;
+    justify-content: center;
+    align-items: flex-end;
+    backdrop-filter: blur(2px);
+  }
+  .modal-mask.show { display: flex; }
+  .modal-box {
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    padding: 24px 20px calc(34px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: max(34px, calc(34px + env(safe-area-inset-bottom)));
+    width: 100%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: slideUp .3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .modal-title {
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f0f0f5;
+    border-radius: 50%;
+    font-size: 16px;
+    color: #8e8e93;
+    cursor: pointer;
+    -webkit-appearance: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 任务列表 */
+  .task-list {
+    margin-bottom: 20px;
+  }
+  .task-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: #f5f5f7;
+    border-radius: 12px;
+    margin-bottom: 8px;
+  }
+  .task-item.disabled {
+    opacity: 0.6;
+  }
+  .task-info {
+    flex: 1;
+  }
+  .task-info .name {
+    font-size: 16px;
+    font-weight: 500;
+  }
+  .task-info .time {
+    font-size: 13px;
+    color: #8e8e93;
+    margin-top: 2px;
+  }
+  .task-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .task-action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    -webkit-appearance: none;
+  }
+  .task-action-btn.toggle {
+    background: #e5e5ea;
+    color: #666;
+  }
+  .task-action-btn.edit {
+    background: #007aff;
+    color: #fff;
+  }
+  .task-action-btn.delete {
+    background: #ff3b30;
+    color: #fff;
+  }
+  .task-action-btn.enable {
+    background: #34c759;
+    color: #fff;
+  }
+
+  /* 任务表单 */
+  .task-form {
+    padding-top: 16px;
+    border-top: 1px solid #e5e5e5;
+  }
+  .form-group {
+    margin-bottom: 16px;
+  }
+  .form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    margin-bottom: 6px;
+  }
+  .form-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e5e5ea;
+    border-radius: 10px;
+    font-size: 16px;
+    outline: none;
+    -webkit-appearance: none;
+  }
+  .form-input:focus {
+    border-color: #007aff;
+  }
+  .form-row {
+    display: flex;
+    gap: 12px;
+  }
+  .form-row .form-group {
+    flex: 1;
+  }
+  .form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .form-btn {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-appearance: none;
+  }
+  .form-btn.cancel {
+    background: #f2f2f7;
+    color: #000;
+  }
+  .form-btn.confirm {
+    background: #007aff;
+    color: #fff;
+  }
+
+  /* 备注弹窗 */
+  .note-textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 1px solid #e5e5ea;
+    border-radius: 10px;
+    font-size: 16px;
+    outline: none;
+    -webkit-appearance: none;
+    resize: none;
+    font-family: inherit;
+  }
+  .note-textarea:focus {
+    border-color: #007aff;
   }
 
   /* 底部统计 */
@@ -222,16 +573,77 @@
     background: #f2f2f7;
   }
 
-  /* iOS输入框优化 */
-  input, button, select, textarea {
+  /* Toast 提示 */
+  .toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.75);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity .3s;
+    pointer-events: none;
+  }
+  .toast.show {
+    opacity: 1;
+  }
+
+  /* 确认弹窗 */
+  .confirm-modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 9999;
+    display: none;
+    justify-content: center;
+    align-items: center;
+  }
+  .confirm-modal.show {
+    display: flex;
+  }
+  .confirm-box {
+    background: #fff;
+    border-radius: 14px;
+    padding: 24px 20px;
+    width: 280px;
+    text-align: center;
+  }
+  .confirm-box h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .confirm-box p {
+    font-size: 15px;
+    color: #666;
+    margin-bottom: 20px;
+  }
+  .confirm-actions {
+    display: flex;
+    gap: 12px;
+  }
+  .confirm-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
     -webkit-appearance: none;
-    border-radius: 0;
   }
-  input:focus, textarea:focus, select:focus {
-    outline: none;
+  .confirm-btn.cancel {
+    background: #f2f2f7;
+    color: #000;
   }
-  input[type="text"] {
-    -webkit-border-radius: 0;
+  .confirm-btn.confirm {
+    background: #ff3b30;
+    color: #fff;
   }
 </style>
 </head>
@@ -242,25 +654,129 @@
     <div class="subtitle" id="subtitle"></div>
   </div>
 
-  <div class="input-section">
-    <div class="input-row">
-      <input id="todoInput" type="text" placeholder="添加新待办…">
-      <button class="btn-add" onclick="addTodo()">添加</button>
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="todo">待办</button>
+    <button class="tab-btn" data-tab="checkin">打卡</button>
+  </div>
+
+  <!-- 待办模块 -->
+  <div class="todo-section active" id="todoSection">
+    <div class="input-section">
+      <div class="input-row">
+        <input id="todoInput" type="text" placeholder="添加新待办…">
+        <button class="btn-add" onclick="addTodo()">添加</button>
+      </div>
+    </div>
+    <div class="list-section">
+      <ul id="todoList"></ul>
     </div>
   </div>
 
-  <div class="list-section">
-    <ul id="todoList"></ul>
+  <!-- 打卡模块 -->
+  <div class="checkin-section" id="checkinSection">
+    <div class="month-nav">
+      <button class="month-nav-btn" onclick="prevMonth()">‹</button>
+      <span class="month-nav-title" id="monthTitle"></span>
+      <button class="month-nav-btn" onclick="nextMonth()">›</button>
+    </div>
+    <div class="checkin-table-wrap">
+      <table class="checkin-table" id="checkinTable"></table>
+    </div>
+    <button class="task-manage-btn" onclick="openTaskManager()">+</button>
   </div>
 
   <div class="footer" id="footer"></div>
 
+  <!-- 任务管理弹窗 -->
+  <div class="modal-mask" id="taskModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">打卡任务管理</span>
+        <button class="modal-close" onclick="closeTaskModal()">✕</button>
+      </div>
+      <div class="task-list" id="taskList"></div>
+      <div class="task-form" id="taskForm">
+        <div class="form-group">
+          <label class="form-label">任务名称</label>
+          <input type="text" class="form-input" id="taskNameInput" placeholder="如：晨跑、阅读">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">开始时间</label>
+            <input type="time" class="form-input" id="taskStartTime">
+          </div>
+          <div class="form-group">
+            <label class="form-label">结束时间</label>
+            <input type="time" class="form-input" id="taskEndTime">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="form-btn cancel" onclick="cancelTaskForm()">取消</button>
+          <button class="form-btn confirm" onclick="saveTask()">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 备注弹窗 -->
+  <div class="modal-mask" id="noteModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">添加备注</span>
+        <button class="modal-close" onclick="closeNoteModal()">✕</button>
+      </div>
+      <textarea class="note-textarea" id="noteInput" placeholder="请输入备注内容…"></textarea>
+      <div class="form-actions">
+        <button class="form-btn cancel" onclick="closeNoteModal()">取消</button>
+        <button class="form-btn confirm" onclick="saveNote()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 确认弹窗 -->
+  <div class="confirm-modal" id="confirmModal">
+    <div class="confirm-box">
+      <h3 id="confirmTitle">确认删除？</h3>
+      <p id="confirmText">删除后数据无法恢复</p>
+      <div class="confirm-actions">
+        <button class="confirm-btn cancel" onclick="closeConfirmModal()">取消</button>
+        <button class="confirm-btn confirm" id="confirmBtn" onclick="confirmAction()">删除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
 <script>
+  // ========== 基础工具 ==========
+  function showToast(msg, duration) {
+    var toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(function() {
+      toast.classList.remove('show');
+    }, duration || 1500);
+  }
+
+  function formatDateKey(d) {
+    return d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2);
+  }
+
+  function parseTime(timeStr) {
+    var parts = timeStr.split(':');
+    return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+  }
+
+  function formatTimeDisplay(timeStr) {
+    return timeStr;
+  }
+
+  // ========== 待办模块 ==========
   var input = document.getElementById('todoInput');
   var list = document.getElementById('todoList');
-  var STORAGE_KEY = 'todo_apple_v2';
+  var TODO_KEY = 'todo_apple_v2';
 
-  // 日期显示
   (function() {
     var d = new Date();
     var week = ['周日','周一','周二','周三','周四','周五','周六'];
@@ -269,7 +785,7 @@
   })();
 
   function loadTodos() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    try { return JSON.parse(localStorage.getItem(TODO_KEY)) || []; }
     catch(e) { return []; }
   }
 
@@ -281,7 +797,7 @@
       var done = li.classList.contains('done') ? 1 : 0;
       items.push({ text: text, done: done });
     });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    localStorage.setItem(TODO_KEY, JSON.stringify(items));
     updateFooter();
   }
 
@@ -303,7 +819,6 @@
   function renderTodo(item) {
     var li = document.createElement('li');
     if (item.done) li.classList.add('done');
-
     li.innerHTML =
       '<div class="swipe-wrap" data-x="0">' +
         '<div class="todo-content">' +
@@ -321,7 +836,6 @@
   function addTodo() {
     var text = input.value.trim();
     if (!text) return;
-
     renderTodo({ text: text, done: 0 });
     saveTodos();
     input.value = '';
@@ -334,7 +848,6 @@
     setTimeout(function() { li.remove(); saveTodos(); }, 200);
   }
 
-  // 左滑显示操作
   function bindSwipe(li) {
     var wrap = li.querySelector('.swipe-wrap');
     var actions = li.querySelector('.swipe-actions');
@@ -416,7 +929,6 @@
     var li = btn.closest('li');
     var textEl = li.querySelector('.todo-text');
     var oldText = textEl.textContent;
-
     closeAllSwipes(null);
     li.classList.remove('swiped');
     var actions = li.querySelector('.swipe-actions');
@@ -445,7 +957,7 @@
     });
   }
 
-  // 加载
+  // 加载待办
   loadTodos().forEach(function(item) {
     if (typeof item === 'string') renderTodo({ text: item, done: 0 });
     else renderTodo({ text: item.text, done: item.done || 0 });
@@ -454,7 +966,414 @@
 
   input.addEventListener('keydown', function(e) { if (e.key === 'Enter') addTodo(); });
 
-  // iOS防止双击缩放
+  // ========== Tab 切换 ==========
+  var currentTab = 'todo';
+  document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      this.classList.add('active');
+      currentTab = this.dataset.tab;
+      document.getElementById('todoSection').classList.toggle('active', currentTab === 'todo');
+      document.getElementById('checkinSection').classList.toggle('active', currentTab === 'checkin');
+      if (currentTab === 'checkin') {
+        renderCheckinTable();
+      }
+    });
+  });
+
+  // ========== 打卡模块 ==========
+  var CHECKIN_TASKS_KEY = 'checkin_tasks_v1';
+  var CHECKIN_DATA_KEY = 'checkin_data_v1';
+  var currentMonth = new Date();
+  var editingTaskId = null;
+  var currentCellInfo = null; // {taskId, dateKey}
+  var confirmCallback = null;
+
+  function loadCheckinTasks() {
+    try { return JSON.parse(localStorage.getItem(CHECKIN_TASKS_KEY)) || []; }
+    catch(e) { return []; }
+  }
+
+  function saveCheckinTasks(tasks) {
+    localStorage.setItem(CHECKIN_TASKS_KEY, JSON.stringify(tasks));
+  }
+
+  function loadCheckinData() {
+    try { return JSON.parse(localStorage.getItem(CHECKIN_DATA_KEY)) || {}; }
+    catch(e) { return {}; }
+  }
+
+  function saveCheckinData(data) {
+    localStorage.setItem(CHECKIN_DATA_KEY, JSON.stringify(data));
+  }
+
+  function getDaysInMonth(year, month) {
+    return new Date(year, month + 1, 0).getDate();
+  }
+
+  function prevMonth() {
+    currentMonth.setMonth(currentMonth.getMonth() - 1);
+    renderCheckinTable();
+  }
+
+  function nextMonth() {
+    currentMonth.setMonth(currentMonth.getMonth() + 1);
+    renderCheckinTable();
+  }
+
+  function renderCheckinTable() {
+    var tasks = loadCheckinTasks().filter(function(t) { return t.enabled; });
+    var allTasks = loadCheckinTasks();
+    var data = loadCheckinData();
+    var year = currentMonth.getFullYear();
+    var month = currentMonth.getMonth();
+    var days = getDaysInMonth(year, month);
+    var today = new Date();
+    var todayKey = formatDateKey(today);
+    var nowMinutes = today.getHours() * 60 + today.getMinutes();
+
+    // 标题
+    document.getElementById('monthTitle').textContent = year + '年' + (month + 1) + '月';
+
+    var html = '<thead><tr><th class="task-name">任务</th>';
+    for (var d = 1; d <= days; d++) {
+      html += '<th>' + d + '</th>';
+    }
+    html += '</tr></thead><tbody>';
+
+    allTasks.forEach(function(task) {
+      if (!task.enabled) return;
+
+      html += '<tr>';
+      html += '<td class="task-name">' + escapeHtml(task.name) + '<div class="time">' + task.startTime + '-' + task.endTime + '</div></td>';
+
+      var startMinutes = parseTime(task.startTime);
+      var endMinutes = parseTime(task.endTime);
+
+      for (var d = 1; d <= days; d++) {
+        var cellDate = new Date(year, month, d);
+        var dateKey = formatDateKey(cellDate);
+        var key = task.id + '_' + dateKey;
+        var record = data[key];
+        var cellClass = 'cell';
+
+        // 判断日期状态
+        var isFuture = dateKey > todayKey;
+        var isToday = dateKey === todayKey;
+        var daysDiff = Math.floor((today - cellDate) / (1000 * 60 * 60 * 24));
+        var isTooOld = daysDiff > 3;
+
+        // 判断时间窗口
+        var windowStart = startMinutes - 60; // 提前1小时
+        var windowEnd = endMinutes + 60; // 超时1小时
+        var inTimeWindow = isToday && nowMinutes >= windowStart && nowMinutes <= windowEnd;
+        var isTimePassed = isToday && nowMinutes > windowEnd;
+
+        if (record && record.checked) {
+          cellClass += ' checked';
+          html += '<td class="' + cellClass + '" data-task="' + task.id + '" data-date="' + dateKey + '">✓</td>';
+        } else if (record && record.note) {
+          cellClass += ' has-note';
+          html += '<td class="' + cellClass + '" data-task="' + task.id + '" data-date="' + dateKey + '" title="' + escapeHtml(record.note) + '">📝</td>';
+        } else if (isFuture) {
+          cellClass += ' future';
+          html += '<td class="' + cellClass + '"></td>';
+        } else if (isTooOld) {
+          cellClass += ' past overdue';
+          html += '<td class="' + cellClass + '">-</td>';
+        } else if (isToday && !inTimeWindow && !isTimePassed) {
+          // 今天但不在时间窗口内，未到时间
+          html += '<td class="' + cellClass + '"></td>';
+        } else if (isToday && isTimePassed) {
+          // 今天时间已过，可以备注
+          html += '<td class="' + cellClass + '" data-task="' + task.id + '" data-date="' + dateKey + '"></td>';
+        } else if (inTimeWindow) {
+          // 在时间窗口内，可以打卡
+          html += '<td class="' + cellClass + '" data-task="' + task.id + '" data-date="' + dateKey + '"></td>';
+        } else {
+          // 历史日期（3天内），可以备注
+          html += '<td class="' + cellClass + '" data-task="' + task.id + '" data-date="' + dateKey + '"></td>';
+        }
+      }
+      html += '</tr>';
+    });
+
+    // 停用的任务
+    var disabledTasks = allTasks.filter(function(t) { return !t.enabled; });
+    if (disabledTasks.length > 0) {
+      html += '<tr style="background:#f9f9f9;"><td colspan="' + (days + 1) + '" style="text-align:left;padding:12px;color:#8e8e93;font-size:12px;">已停用的任务</td></tr>';
+      disabledTasks.forEach(function(task) {
+        html += '<tr>';
+        html += '<td class="task-name" style="opacity:0.5;">' + escapeHtml(task.name) + '<span class="status-tag disabled">已停用</span><div class="time">' + task.startTime + '-' + task.endTime + '</div></td>';
+        for (var d = 1; d <= days; d++) {
+          html += '<td class="cell disabled-task"></td>';
+        }
+        html += '</tr>';
+      });
+    }
+
+    html += '</tbody>';
+    document.getElementById('checkinTable').innerHTML = html;
+
+    // 绑定点击事件
+    document.querySelectorAll('.checkin-table td.cell[data-task]').forEach(function(cell) {
+      cell.addEventListener('click', function() {
+        handleCellClick(this);
+      });
+    });
+  }
+
+  function handleCellClick(cell) {
+    var taskId = cell.dataset.task;
+    var dateKey = cell.dataset.date;
+    var tasks = loadCheckinTasks();
+    var task = tasks.find(function(t) { return t.id === taskId; });
+    if (!task || !task.enabled) return;
+
+    var data = loadCheckinData();
+    var key = taskId + '_' + dateKey;
+    var record = data[key] || {};
+
+    var today = new Date();
+    var todayKey = formatDateKey(today);
+    var cellDate = new Date(dateKey);
+    var daysDiff = Math.floor((today - cellDate) / (1000 * 60 * 60 * 24));
+
+    // 判断是否可编辑（超过3天不可编辑）
+    var canEdit = daysDiff <= 3;
+
+    // 未来日期
+    if (dateKey > todayKey) {
+      showToast('无法操作未来日期');
+      return;
+    }
+
+    // 超过3天
+    if (daysDiff > 3) {
+      showToast('已超过可操作时间');
+      return;
+    }
+
+    var nowMinutes = today.getHours() * 60 + today.getMinutes();
+    var startMinutes = parseTime(task.startTime);
+    var endMinutes = parseTime(task.endTime);
+    var windowStart = startMinutes - 60;
+    var windowEnd = endMinutes + 60;
+    var isToday = dateKey === todayKey;
+
+    // 已打卡
+    if (record.checked) {
+      if (canEdit) {
+        // 取消打卡
+        delete data[key];
+        saveCheckinData(data);
+        renderCheckinTable();
+        showToast('已取消打卡');
+      } else {
+        showToast('已超过可操作时间');
+      }
+      return;
+    }
+
+    // 已有备注
+    if (record.note) {
+      if (canEdit) {
+        currentCellInfo = { taskId: taskId, dateKey: dateKey };
+        document.getElementById('noteInput').value = record.note;
+        document.getElementById('noteModal').classList.add('show');
+      } else {
+        showToast('已超过可操作时间');
+      }
+      return;
+    }
+
+    // 在时间窗口内，可以打卡
+    if (isToday && nowMinutes >= windowStart && nowMinutes <= windowEnd) {
+      data[key] = { checked: true };
+      saveCheckinData(data);
+      renderCheckinTable();
+      showToast('打卡成功！');
+      return;
+    }
+
+    // 时间已过或非今天，可以备注
+    if (!isToday || nowMinutes > windowEnd) {
+      currentCellInfo = { taskId: taskId, dateKey: dateKey };
+      document.getElementById('noteInput').value = '';
+      document.getElementById('noteModal').classList.add('show');
+      return;
+    }
+
+    // 未到时间
+    showToast('未到打卡时间');
+  }
+
+  // ========== 任务管理 ==========
+  function openTaskManager() {
+    editingTaskId = null;
+    resetTaskForm();
+    renderTaskList();
+    document.getElementById('taskModal').classList.add('show');
+  }
+
+  function closeTaskModal() {
+    document.getElementById('taskModal').classList.remove('show');
+    editingTaskId = null;
+    resetTaskForm();
+  }
+
+  function resetTaskForm() {
+    document.getElementById('taskNameInput').value = '';
+    document.getElementById('taskStartTime').value = '08:00';
+    document.getElementById('taskEndTime').value = '09:00';
+  }
+
+  function renderTaskList() {
+    var tasks = loadCheckinTasks();
+    var html = '';
+    tasks.forEach(function(task) {
+      html += '<div class="task-item' + (task.enabled ? '' : ' disabled') + '">';
+      html += '<div class="task-info">';
+      html += '<div class="name">' + escapeHtml(task.name) + '</div>';
+      html += '<div class="time">' + task.startTime + ' - ' + task.endTime + '</div>';
+      html += '</div>';
+      html += '<div class="task-actions">';
+      if (task.enabled) {
+        html += '<button class="task-action-btn toggle" onclick="toggleTask(\'' + task.id + '\')">停用</button>';
+      } else {
+        html += '<button class="task-action-btn enable" onclick="toggleTask(\'' + task.id + '\')">启用</button>';
+      }
+      html += '<button class="task-action-btn edit" onclick="editTask(\'' + task.id + '\')">编辑</button>';
+      html += '<button class="task-action-btn delete" onclick="deleteTask(\'' + task.id + '\')">删除</button>';
+      html += '</div>';
+      html += '</div>';
+    });
+    document.getElementById('taskList').innerHTML = html || '<p style="text-align:center;color:#8e8e93;padding:20px;">暂无打卡任务</p>';
+  }
+
+  function toggleTask(taskId) {
+    var tasks = loadCheckinTasks();
+    var task = tasks.find(function(t) { return t.id === taskId; });
+    if (task) {
+      task.enabled = !task.enabled;
+      saveCheckinTasks(tasks);
+      renderTaskList();
+      renderCheckinTable();
+    }
+  }
+
+  function editTask(taskId) {
+    var tasks = loadCheckinTasks();
+    var task = tasks.find(function(t) { return t.id === taskId; });
+    if (task) {
+      editingTaskId = taskId;
+      document.getElementById('taskNameInput').value = task.name;
+      document.getElementById('taskStartTime').value = task.startTime;
+      document.getElementById('taskEndTime').value = task.endTime;
+    }
+  }
+
+  function deleteTask(taskId) {
+    var tasks = loadCheckinTasks();
+    var task = tasks.find(function(t) { return t.id === taskId; });
+    if (task) {
+      confirmCallback = function() {
+        tasks = tasks.filter(function(t) { return t.id !== taskId; });
+        saveCheckinTasks(tasks);
+        renderTaskList();
+        renderCheckinTable();
+      };
+      document.getElementById('confirmTitle').textContent = '确认删除？';
+      document.getElementById('confirmText').textContent = '删除任务"' + task.name + '"后，相关打卡记录也会被清除';
+      document.getElementById('confirmModal').classList.add('show');
+    }
+  }
+
+  function saveTask() {
+    var name = document.getElementById('taskNameInput').value.trim();
+    var startTime = document.getElementById('taskStartTime').value;
+    var endTime = document.getElementById('taskEndTime').value;
+
+    if (!name) {
+      showToast('请输入任务名称');
+      return;
+    }
+    if (!startTime || !endTime) {
+      showToast('请选择时间段');
+      return;
+    }
+    if (startTime >= endTime) {
+      showToast('结束时间必须大于开始时间');
+      return;
+    }
+
+    var tasks = loadCheckinTasks();
+
+    if (editingTaskId) {
+      var task = tasks.find(function(t) { return t.id === editingTaskId; });
+      if (task) {
+        task.name = name;
+        task.startTime = startTime;
+        task.endTime = endTime;
+      }
+    } else {
+      tasks.push({
+        id: 'task_' + Date.now(),
+        name: name,
+        startTime: startTime,
+        endTime: endTime,
+        enabled: true
+      });
+    }
+
+    saveCheckinTasks(tasks);
+    resetTaskForm();
+    editingTaskId = null;
+    renderTaskList();
+    renderCheckinTable();
+    showToast('保存成功');
+  }
+
+  function cancelTaskForm() {
+    resetTaskForm();
+    editingTaskId = null;
+  }
+
+  // ========== 备注相关 ==========
+  function closeNoteModal() {
+    document.getElementById('noteModal').classList.remove('show');
+    currentCellInfo = null;
+  }
+
+  function saveNote() {
+    if (!currentCellInfo) return;
+    var note = document.getElementById('noteInput').value.trim();
+    var data = loadCheckinData();
+    var key = currentCellInfo.taskId + '_' + currentCellInfo.dateKey;
+
+    if (note) {
+      data[key] = { note: note };
+      saveCheckinData(data);
+      renderCheckinTable();
+      showToast('备注已保存');
+    }
+    closeNoteModal();
+  }
+
+  // ========== 确认弹窗 ==========
+  function closeConfirmModal() {
+    document.getElementById('confirmModal').classList.remove('show');
+    confirmCallback = null;
+  }
+
+  function confirmAction() {
+    if (confirmCallback) {
+      confirmCallback();
+    }
+    closeConfirmModal();
+  }
+
+  // ========== iOS 优化 ==========
   document.addEventListener('touchend', function(e) {
     var now = Date.now();
     if (now - (this.lastTouch || 0) < 300) {
@@ -465,7 +1384,7 @@
 
   document.addEventListener('touchmove', function() {}, { passive: true });
 
-  // 注册Service Worker
+  // 注册 Service Worker
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(function() {});
   }
