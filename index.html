@@ -1138,7 +1138,7 @@
       html += '<tr style="background:#f9f9f9;"><td colspan="' + (days + 1) + '" style="text-align:left;padding:12px;color:#8e8e93;font-size:12px;">已停用的任务</td></tr>';
       disabledTasks.forEach(function(task) {
         html += '<tr>';
-        html += '<td class="task-name" style="opacity:0.5;background:#fff;"><div class="task-title">' + escapeHtml(task.name) + '<span class="status-tag disabled">已停用</span></div><div class="time">' + task.startTime + '-' + task.endTime + '</div></td>';
+        html += '<td class="task-name" style="opacity:0.5;"><div class="task-title">' + escapeHtml(task.name) + '<span class="status-tag disabled">已停用</span></div><div class="time">' + task.startTime + '-' + task.endTime + '</div></td>';
         for (var d = 1; d <= days; d++) {
           html += '<td class="cell disabled-task"></td>';
         }
