@@ -1493,6 +1493,10 @@
 
   // ========== iOS 优化 ==========
   document.addEventListener('touchend', function(e) {
+    // 如果目标元素是输入框，不阻止默认行为
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+      return;
+    }
     var now = Date.now();
     if (now - (this.lastTouch || 0) < 300) {
       e.preventDefault();
