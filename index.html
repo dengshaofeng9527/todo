@@ -740,8 +740,8 @@
         </div>
       </div>
       <div class="form-actions" style="margin-top:16px;padding-top:16px;border-top:1px solid #e5e5e5;">
-        <button class="form-btn confirm" onclick="saveTask()">保存</button>
-        <button class="form-btn cancel" onclick="closeTaskModal()">关闭</button>
+        <button class="form-btn confirm" id="saveTaskBtn">保存</button>
+        <button class="form-btn cancel" id="closeTaskModalBtn">关闭</button>
       </div>
     </div>
   </div>
@@ -755,8 +755,8 @@
       </div>
       <textarea class="note-textarea" id="noteInput" placeholder="请输入备注内容…"></textarea>
       <div class="form-actions">
-        <button class="form-btn cancel" onclick="closeNoteModal()">取消</button>
-        <button class="form-btn confirm" onclick="saveNote()">保存</button>
+        <button class="form-btn cancel" id="closeNoteModalBtn">取消</button>
+        <button class="form-btn confirm" id="saveNoteBtn">保存</button>
       </div>
     </div>
   </div>
@@ -767,8 +767,8 @@
       <h3 id="confirmTitle">确认删除？</h3>
       <p id="confirmText">删除后数据无法恢复</p>
       <div class="confirm-actions">
-        <button class="confirm-btn cancel" onclick="closeConfirmModal()">取消</button>
-        <button class="confirm-btn confirm" id="confirmBtn" onclick="confirmAction()">删除</button>
+        <button class="confirm-btn cancel" id="closeConfirmModalBtn">取消</button>
+        <button class="confirm-btn confirm" id="confirmBtn">删除</button>
       </div>
     </div>
   </div>
@@ -1146,50 +1146,56 @@
     document.getElementById('checkinTable').innerHTML = html;
 
     // 绑定点击事件 - 单击打卡，双击备注
-    document.querySelectorAll('.checkin-table td.cell[data-task]').forEach(function(cell) {
-      var lastTap = 0;
-      var tapTimer = null;
+    bindCellEvents();
+  }
 
+  // 全局变量用于单击/双击检测
+  var cellLastTap = 0;
+  var cellTapTimer = null;
+
+  // 绑定单元格事件
+  function bindCellEvents() {
+    document.querySelectorAll('.checkin-table td.cell[data-task]').forEach(function(cell) {
       // 触摸事件处理
       cell.addEventListener('touchend', function(e) {
+        e.preventDefault();
         var now = Date.now();
 
-        if (now - lastTap < 300) {
+        if (now - cellLastTap < 300) {
           // 双击
-          if (tapTimer) {
-            clearTimeout(tapTimer);
-            tapTimer = null;
+          if (cellTapTimer) {
+            clearTimeout(cellTapTimer);
+            cellTapTimer = null;
           }
           handleCellNote(this);
-          lastTap = 0;
+          cellLastTap = 0;
         } else {
-          lastTap = now;
+          cellLastTap = now;
           var self = this;
-          tapTimer = setTimeout(function() {
+          cellTapTimer = setTimeout(function() {
             handleCellCheck(self);
-            tapTimer = null;
+            cellTapTimer = null;
           }, 300);
         }
       });
 
       // 桌面点击处理
       cell.addEventListener('click', function(e) {
-        if (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) return;
         var now = Date.now();
 
-        if (now - lastTap < 300) {
-          if (tapTimer) {
-            clearTimeout(tapTimer);
-            tapTimer = null;
+        if (now - cellLastTap < 300) {
+          if (cellTapTimer) {
+            clearTimeout(cellTapTimer);
+            cellTapTimer = null;
           }
           handleCellNote(this);
-          lastTap = 0;
+          cellLastTap = 0;
         } else {
-          lastTap = now;
+          cellLastTap = now;
           var self = this;
-          tapTimer = setTimeout(function() {
+          cellTapTimer = setTimeout(function() {
             handleCellCheck(self);
-            tapTimer = null;
+            cellTapTimer = null;
           }, 300);
         }
       });
@@ -1350,23 +1356,38 @@
     var tasks = loadCheckinTasks();
     var html = '';
     tasks.forEach(function(task) {
-      html += '<div class="task-item' + (task.enabled ? '' : ' disabled') + '">';
+      html += '<div class="task-item' + (task.enabled ? '' : ' disabled') + '" data-task-id="' + task.id + '">';
       html += '<div class="task-info">';
       html += '<div class="name">' + escapeHtml(task.name) + '</div>';
       html += '<div class="time">' + task.startTime + ' - ' + task.endTime + '</div>';
       html += '</div>';
       html += '<div class="task-actions">';
       if (task.enabled) {
-        html += '<button class="task-action-btn toggle" onclick="toggleTask(\'' + task.id + '\')">停用</button>';
+        html += '<button class="task-action-btn toggle" data-action="toggle">停用</button>';
       } else {
-        html += '<button class="task-action-btn enable" onclick="toggleTask(\'' + task.id + '\')">启用</button>';
+        html += '<button class="task-action-btn enable" data-action="toggle">启用</button>';
       }
-      html += '<button class="task-action-btn edit" onclick="editTask(\'' + task.id + '\')">编辑</button>';
-      html += '<button class="task-action-btn delete" onclick="deleteTask(\'' + task.id + '\')">删除</button>';
+      html += '<button class="task-action-btn edit" data-action="edit">编辑</button>';
+      html += '<button class="task-action-btn delete" data-action="delete">删除</button>';
       html += '</div>';
       html += '</div>';
     });
     document.getElementById('taskList').innerHTML = html || '<p style="text-align:center;color:#8e8e93;padding:20px;">暂无打卡任务</p>';
+
+    // 绑定任务项按钮事件
+    document.querySelectorAll('.task-item').forEach(function(item) {
+      var taskId = item.dataset.taskId;
+      item.querySelectorAll('.task-action-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var action = this.dataset.action;
+          if (action === 'toggle') toggleTask(taskId);
+          else if (action === 'edit') editTask(taskId);
+          else if (action === 'delete') deleteTask(taskId);
+        });
+      });
+    });
   }
 
   function toggleTask(taskId) {
@@ -1511,6 +1532,46 @@
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(function() {});
   }
+
+  // 任务管理弹窗按钮事件绑定
+  document.getElementById('saveTaskBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    saveTask();
+  });
+
+  document.getElementById('closeTaskModalBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    closeTaskModal();
+  });
+
+  // 阻止弹窗内表单的默认行为
+  document.getElementById('taskForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+  });
+
+  // 备注弹窗按钮事件绑定
+  document.getElementById('closeNoteModalBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    closeNoteModal();
+  });
+
+  document.getElementById('saveNoteBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    saveNote();
+  });
+
+  // 确认弹窗按钮事件绑定
+  document.getElementById('closeConfirmModalBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    closeConfirmModal();
+  });
+
+  document.getElementById('confirmBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    confirmAction();
+  });
 </script>
 </body>
 </html>
