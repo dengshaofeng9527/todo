@@ -287,38 +287,56 @@
     border-radius: 12px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    position: relative;
   }
   .checkin-table {
     min-width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     font-size: 13px;
   }
   .checkin-table th, .checkin-table td {
-    padding: 8px 4px;
+    padding: 8px 6px;
     text-align: center;
     border: 1px solid #e5e5e5;
-    min-width: 32px;
+    min-width: 36px;
   }
   .checkin-table th {
     background: #f5f5f7;
     font-weight: 500;
     color: #8e8e93;
     font-size: 11px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
   }
   .checkin-table th.task-name {
     text-align: left;
     padding-left: 12px;
-    min-width: 80px;
+    min-width: 100px;
+    position: sticky;
+    left: 0;
+    z-index: 20;
+    background: #f5f5f7;
   }
   .checkin-table td.task-name {
     text-align: left;
     padding-left: 12px;
     font-weight: 500;
+    position: sticky;
+    left: 0;
+    z-index: 5;
+    background: #fff;
+  }
+  .checkin-table td.task-name .task-title {
+    font-weight: 500;
+    line-height: 1.3;
   }
   .checkin-table td.task-name .time {
     font-size: 11px;
     color: #8e8e93;
     font-weight: normal;
+    line-height: 1.3;
   }
   .checkin-table td.task-name .status-tag {
     font-size: 10px;
@@ -362,7 +380,7 @@
   .task-manage-btn {
     position: fixed;
     right: 16px;
-    bottom: calc(80px + env(safe-area-inset-bottom));
+    bottom: calc(30px + env(safe-area-inset-bottom));
     width: 56px;
     height: 56px;
     background: #007aff;
@@ -650,7 +668,7 @@
 <body>
 
   <div class="navbar">
-    <h1>待办事项</h1>
+    <h1>日常打卡</h1>
     <div class="subtitle" id="subtitle"></div>
   </div>
 
@@ -692,7 +710,6 @@
     <div class="modal-box">
       <div class="modal-header">
         <span class="modal-title">打卡任务管理</span>
-        <button class="modal-close" onclick="closeTaskModal()">✕</button>
       </div>
       <div class="task-list" id="taskList"></div>
       <div class="task-form" id="taskForm">
@@ -711,9 +728,11 @@
           </div>
         </div>
         <div class="form-actions">
-          <button class="form-btn cancel" onclick="cancelTaskForm()">取消</button>
-          <button class="form-btn confirm" onclick="saveTask()">保存</button>
+          <button class="form-btn confirm" onclick="saveTask()" style="flex:none;width:100%;">保存</button>
         </div>
+      </div>
+      <div class="form-actions" style="margin-top:16px;padding-top:16px;border-top:1px solid #e5e5e5;">
+        <button class="form-btn cancel" onclick="closeTaskModal()" style="flex:none;width:100%;">关闭</button>
       </div>
     </div>
   </div>
@@ -1045,7 +1064,7 @@
       if (!task.enabled) return;
 
       html += '<tr>';
-      html += '<td class="task-name">' + escapeHtml(task.name) + '<div class="time">' + task.startTime + '-' + task.endTime + '</div></td>';
+      html += '<td class="task-name"><div class="task-title">' + escapeHtml(task.name) + '</div><div class="time">' + task.startTime + '-' + task.endTime + '</div></td>';
 
       var startMinutes = parseTime(task.startTime);
       var endMinutes = parseTime(task.endTime);
@@ -1061,7 +1080,7 @@
         var isFuture = dateKey > todayKey;
         var isToday = dateKey === todayKey;
         var daysDiff = Math.floor((today - cellDate) / (1000 * 60 * 60 * 24));
-        var isTooOld = daysDiff > 3;
+        var isTooOld = daysDiff > 1;
 
         // 判断时间窗口
         var windowStart = startMinutes - 60; // 提前1小时
@@ -1091,7 +1110,7 @@
           // 在时间窗口内，可以打卡
           html += '<td class="' + cellClass + '" data-task="' + task.id + '" data-date="' + dateKey + '"></td>';
         } else {
-          // 历史日期（3天内），可以备注
+          // 历史日期（昨天），可以备注
           html += '<td class="' + cellClass + '" data-task="' + task.id + '" data-date="' + dateKey + '"></td>';
         }
       }
@@ -1104,7 +1123,7 @@
       html += '<tr style="background:#f9f9f9;"><td colspan="' + (days + 1) + '" style="text-align:left;padding:12px;color:#8e8e93;font-size:12px;">已停用的任务</td></tr>';
       disabledTasks.forEach(function(task) {
         html += '<tr>';
-        html += '<td class="task-name" style="opacity:0.5;">' + escapeHtml(task.name) + '<span class="status-tag disabled">已停用</span><div class="time">' + task.startTime + '-' + task.endTime + '</div></td>';
+        html += '<td class="task-name" style="opacity:0.5;"><div class="task-title">' + escapeHtml(task.name) + '<span class="status-tag disabled">已停用</span></div><div class="time">' + task.startTime + '-' + task.endTime + '</div></td>';
         for (var d = 1; d <= days; d++) {
           html += '<td class="cell disabled-task"></td>';
         }
@@ -1115,15 +1134,29 @@
     html += '</tbody>';
     document.getElementById('checkinTable').innerHTML = html;
 
-    // 绑定点击事件
+    // 绑定点击事件 - 单击打卡，双击备注
     document.querySelectorAll('.checkin-table td.cell[data-task]').forEach(function(cell) {
-      cell.addEventListener('click', function() {
-        handleCellClick(this);
+      var lastClickTime = 0;
+      cell.addEventListener('click', function(e) {
+        var now = Date.now();
+        if (now - lastClickTime < 300) {
+          // 双击 - 备注
+          handleCellNote(this);
+        } else {
+          // 单击 - 打卡
+          setTimeout(function() {
+            if (Date.now() - lastClickTime >= 280) {
+              handleCellCheck(cell);
+            }
+          }, 300);
+        }
+        lastClickTime = now;
       });
     });
   }
 
-  function handleCellClick(cell) {
+  // 单击打卡
+  function handleCellCheck(cell) {
     var taskId = cell.dataset.task;
     var dateKey = cell.dataset.date;
     var tasks = loadCheckinTasks();
@@ -1139,8 +1172,8 @@
     var cellDate = new Date(dateKey);
     var daysDiff = Math.floor((today - cellDate) / (1000 * 60 * 60 * 24));
 
-    // 判断是否可编辑（超过3天不可编辑）
-    var canEdit = daysDiff <= 3;
+    // 判断是否可编辑（只能操作昨天和今天）
+    var canEdit = daysDiff <= 1;
 
     // 未来日期
     if (dateKey > todayKey) {
@@ -1148,9 +1181,9 @@
       return;
     }
 
-    // 超过3天
-    if (daysDiff > 3) {
-      showToast('已超过可操作时间');
+    // 超过1天（前天及更早）
+    if (daysDiff > 1) {
+      showToast('只能操作昨天和今天的记录');
       return;
     }
 
@@ -1177,13 +1210,7 @@
 
     // 已有备注
     if (record.note) {
-      if (canEdit) {
-        currentCellInfo = { taskId: taskId, dateKey: dateKey };
-        document.getElementById('noteInput').value = record.note;
-        document.getElementById('noteModal').classList.add('show');
-      } else {
-        showToast('已超过可操作时间');
-      }
+      showToast('已有备注：' + record.note);
       return;
     }
 
@@ -1196,16 +1223,49 @@
       return;
     }
 
-    // 时间已过或非今天，可以备注
+    // 时间已过或非今天
     if (!isToday || nowMinutes > windowEnd) {
-      currentCellInfo = { taskId: taskId, dateKey: dateKey };
-      document.getElementById('noteInput').value = '';
-      document.getElementById('noteModal').classList.add('show');
+      showToast('已超时，双击可添加备注');
       return;
     }
 
     // 未到时间
     showToast('未到打卡时间');
+  }
+
+  // 双击备注
+  function handleCellNote(cell) {
+    var taskId = cell.dataset.task;
+    var dateKey = cell.dataset.date;
+    var tasks = loadCheckinTasks();
+    var task = tasks.find(function(t) { return t.id === taskId; });
+    if (!task || !task.enabled) return;
+
+    var today = new Date();
+    var cellDate = new Date(dateKey);
+    var daysDiff = Math.floor((today - cellDate) / (1000 * 60 * 60 * 24));
+    var todayKey = formatDateKey(today);
+
+    // 未来日期
+    if (dateKey > todayKey) {
+      showToast('无法操作未来日期');
+      return;
+    }
+
+    // 超过1天（前天及更早）
+    if (daysDiff > 1) {
+      showToast('只能操作昨天和今天的记录');
+      return;
+    }
+
+    var data = loadCheckinData();
+    var key = taskId + '_' + dateKey;
+    var record = data[key] || {};
+
+    // 打开备注弹窗
+    currentCellInfo = { taskId: taskId, dateKey: dateKey };
+    document.getElementById('noteInput').value = record.note || '';
+    document.getElementById('noteModal').classList.add('show');
   }
 
   // ========== 任务管理 ==========
@@ -1226,7 +1286,24 @@
     document.getElementById('taskNameInput').value = '';
     document.getElementById('taskStartTime').value = '08:00';
     document.getElementById('taskEndTime').value = '09:00';
+    editingTaskId = null;
   }
+
+  // 开始时间变化时自动更新结束时间
+  document.getElementById('taskStartTime').addEventListener('change', function() {
+    if (!editingTaskId) {
+      var startParts = this.value.split(':');
+      var startHour = parseInt(startParts[0]);
+      var startMin = parseInt(startParts[1]);
+      var endHour = startHour + 1;
+      var endMin = startMin;
+      if (endHour >= 24) {
+        endHour = 23;
+        endMin = 59;
+      }
+      document.getElementById('taskEndTime').value = ('0' + endHour).slice(-2) + ':' + ('0' + endMin).slice(-2);
+    }
+  });
 
   function renderTaskList() {
     var tasks = loadCheckinTasks();
@@ -1350,12 +1427,23 @@
     var note = document.getElementById('noteInput').value.trim();
     var data = loadCheckinData();
     var key = currentCellInfo.taskId + '_' + currentCellInfo.dateKey;
+    var existing = data[key] || {};
 
     if (note) {
-      data[key] = { note: note };
+      data[key] = { checked: existing.checked, note: note };
       saveCheckinData(data);
       renderCheckinTable();
       showToast('备注已保存');
+    } else if (existing.checked) {
+      // 如果清空备注但有打卡，保留打卡
+      data[key] = { checked: true };
+      saveCheckinData(data);
+      renderCheckinTable();
+    } else {
+      // 完全清空
+      delete data[key];
+      saveCheckinData(data);
+      renderCheckinTable();
     }
     closeNoteModal();
   }
