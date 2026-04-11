@@ -1123,7 +1123,7 @@
       html += '<tr style="background:#f9f9f9;"><td colspan="' + (days + 1) + '" style="text-align:left;padding:12px;color:#8e8e93;font-size:12px;">已停用的任务</td></tr>';
       disabledTasks.forEach(function(task) {
         html += '<tr>';
-        html += '<td class="task-name" style="opacity:0.5;"><div class="task-title">' + escapeHtml(task.name) + '<span class="status-tag disabled">已停用</span></div><div class="time">' + task.startTime + '-' + task.endTime + '</div></td>';
+        html += '<td class="task-name" style="opacity:0.5;background:#fff;"><div class="task-title">' + escapeHtml(task.name) + '<span class="status-tag disabled">已停用</span></div><div class="time">' + task.startTime + '-' + task.endTime + '</div></td>';
         for (var d = 1; d <= days; d++) {
           html += '<td class="cell disabled-task"></td>';
         }
@@ -1136,27 +1136,49 @@
 
     // 绑定点击事件 - 单击打卡，双击备注
     document.querySelectorAll('.checkin-table td.cell[data-task]').forEach(function(cell) {
-      var clickTimer = null;
-      var lastClick = 0;
-      cell.addEventListener('click', function(e) {
+      var lastTap = 0;
+      var tapTimer = null;
+
+      // 触摸事件处理
+      cell.addEventListener('touchend', function(e) {
+        e.preventDefault();
         var now = Date.now();
-        // 双击检测
-        if (now - lastClick < 350) {
-          // 清除单击定时器
-          if (clickTimer) {
-            clearTimeout(clickTimer);
-            clickTimer = null;
+
+        if (now - lastTap < 300) {
+          // 双击
+          if (tapTimer) {
+            clearTimeout(tapTimer);
+            tapTimer = null;
           }
-          // 双击 - 备注
           handleCellNote(this);
-          lastClick = 0;
+          lastTap = 0;
         } else {
-          lastClick = now;
-          // 延迟执行单击
-          clickTimer = setTimeout(function() {
+          lastTap = now;
+          tapTimer = setTimeout(function() {
             handleCellCheck(cell);
-            clickTimer = null;
-          }, 350);
+            tapTimer = null;
+          }, 300);
+        }
+      });
+
+      // 桌面点击处理
+      cell.addEventListener('click', function(e) {
+        if (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) return;
+        var now = Date.now();
+
+        if (now - lastTap < 300) {
+          if (tapTimer) {
+            clearTimeout(tapTimer);
+            tapTimer = null;
+          }
+          handleCellNote(this);
+          lastTap = 0;
+        } else {
+          lastTap = now;
+          tapTimer = setTimeout(function() {
+            handleCellCheck(cell);
+            tapTimer = null;
+          }, 300);
         }
       });
     });
