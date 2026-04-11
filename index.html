@@ -1141,7 +1141,6 @@
 
       // 触摸事件处理
       cell.addEventListener('touchend', function(e) {
-        e.preventDefault();
         var now = Date.now();
 
         if (now - lastTap < 300) {
@@ -1154,8 +1153,9 @@
           lastTap = 0;
         } else {
           lastTap = now;
+          var self = this;
           tapTimer = setTimeout(function() {
-            handleCellCheck(cell);
+            handleCellCheck(self);
             tapTimer = null;
           }, 300);
         }
@@ -1175,8 +1175,9 @@
           lastTap = 0;
         } else {
           lastTap = now;
+          var self = this;
           tapTimer = setTimeout(function() {
-            handleCellCheck(cell);
+            handleCellCheck(self);
             tapTimer = null;
           }, 300);
         }
