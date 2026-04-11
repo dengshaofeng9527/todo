@@ -1135,7 +1135,13 @@
     // 停用的任务
     var disabledTasks = allTasks.filter(function(t) { return !t.enabled; });
     if (disabledTasks.length > 0) {
-      html += '<tr style="background:#f9f9f9;"><td colspan="' + (days + 1) + '" style="text-align:left;padding:12px;color:#8e8e93;font-size:12px;">已停用的任务</td></tr>';
+      // 分隔行：文字放在首列，其他列留空，保持sticky效果
+      html += '<tr>';
+      html += '<td class="task-name" style="background:#f9f9f9;font-size:12px;color:#8e8e93;padding:12px;">已停用的任务</td>';
+      for (var d = 1; d <= days; d++) {
+        html += '<td style="background:#f9f9f9;"></td>';
+      }
+      html += '</tr>';
       disabledTasks.forEach(function(task) {
         html += '<tr>';
         html += '<td class="task-name" style="opacity:0.5;"><div class="task-title">' + escapeHtml(task.name) + '<span class="status-tag disabled">已停用</span></div><div class="time">' + task.startTime + '-' + task.endTime + '</div></td>';
