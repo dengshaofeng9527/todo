@@ -415,6 +415,8 @@
     backdrop-filter: blur(2px);
   }
   .modal-mask.show { display: flex; }
+  .modal-mask.no-pointer { pointer-events: none; }
+  .modal-mask.no-pointer .modal-box { pointer-events: auto; }
   .modal-box {
     background: #fff;
     border-radius: 20px 20px 0 0;
@@ -426,6 +428,8 @@
     overflow-y: auto;
     animation: slideUp .3s cubic-bezier(0.25, 0.1, 0.25, 1);
     touch-action: auto;
+    position: relative;
+    z-index: 10;
   }
   @keyframes slideUp {
     from { transform: translateY(100%); }
@@ -1334,14 +1338,20 @@
     document.getElementById('taskStartTime').value = '08:00';
     document.getElementById('taskEndTime').value = '09:00';
     editingTaskId = null;
+    isEditingTask = false; // 重置编辑标记
   }
 
   // 开始时间变化时自动更新结束时间
+  var isEditingTask = false; // 用于跟踪是否正在编辑任务
   document.getElementById('taskStartTime').addEventListener('change', function() {
-    if (!editingTaskId) {
-      var startParts = this.value.split(':');
-      var startHour = parseInt(startParts[0]);
-      var startMin = parseInt(startParts[1]);
+    // 只有在新增任务时才自动调整结束时间
+    if (!editingTaskId && !isEditingTask) {
+      var val = this.value;
+      if (!val || val.indexOf(':') === -1) return;
+      var startParts = val.split(':');
+      var startHour = parseInt(startParts[0], 10);
+      var startMin = parseInt(startParts[1], 10);
+      if (isNaN(startHour) || isNaN(startMin)) return;
       var endHour = startHour + 1;
       var endMin = startMin;
       if (endHour >= 24) {
@@ -1406,6 +1416,7 @@
     var task = tasks.find(function(t) { return t.id === taskId; });
     if (task) {
       editingTaskId = taskId;
+      isEditingTask = true; // 标记正在编辑
       document.getElementById('taskNameInput').value = task.name;
       document.getElementById('taskStartTime').value = task.startTime;
       document.getElementById('taskEndTime').value = task.endTime;
@@ -1551,6 +1562,40 @@
     e.preventDefault();
   });
 
+  // iOS 时间选择器保护：阻止事件冒泡导致弹窗状态异常
+  document.getElementById('taskStartTime').addEventListener('focus', function(e) {
+    e.stopPropagation();
+  });
+  document.getElementById('taskStartTime').addEventListener('blur', function(e) {
+    e.stopPropagation();
+  });
+  document.getElementById('taskEndTime').addEventListener('focus', function(e) {
+    e.stopPropagation();
+  });
+  document.getElementById('taskEndTime').addEventListener('blur', function(e) {
+    e.stopPropagation();
+  });
+
+  // 阻止时间选择器的触摸/点击事件冒泡到 mask 层
+  document.getElementById('taskStartTime').addEventListener('touchstart', function(e) {
+    e.stopPropagation();
+  });
+  document.getElementById('taskEndTime').addEventListener('touchstart', function(e) {
+    e.stopPropagation();
+  });
+
+  // 确保 modal-box 内的点击不会关闭弹窗
+  document.querySelector('#taskModal .modal-box').addEventListener('click', function(e) {
+    e.stopPropagation();
+  });
+
+  // 点击 mask 层关闭弹窗（可选，如果不需要可以删除）
+  document.getElementById('taskModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeTaskModal();
+    }
+  });
+
   // 备注弹窗按钮事件绑定
   document.getElementById('closeNoteModalBtn').addEventListener('click', function(e) {
     e.preventDefault();
@@ -1560,6 +1605,25 @@
   document.getElementById('saveNoteBtn').addEventListener('click', function(e) {
     e.preventDefault();
     saveNote();
+  });
+
+  // 备注弹窗保护
+  document.querySelector('#noteModal .modal-box').addEventListener('click', function(e) {
+    e.stopPropagation();
+  });
+  document.getElementById('noteModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeNoteModal();
+    }
+  });
+  document.getElementById('noteInput').addEventListener('focus', function(e) {
+    e.stopPropagation();
+  });
+  document.getElementById('noteInput').addEventListener('blur', function(e) {
+    e.stopPropagation();
+  });
+  document.getElementById('noteInput').addEventListener('touchstart', function(e) {
+    e.stopPropagation();
   });
 
   // 确认弹窗按钮事件绑定
