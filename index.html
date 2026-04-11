@@ -13,7 +13,7 @@
 <link rel="manifest" href="manifest.json">
 <title>待办事项</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
   html, body {
     font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
     background: #f2f2f7;
@@ -102,6 +102,9 @@
   }
   .input-row input[type="text"]::placeholder {
     color: #c7c7cc;
+  }
+  .input-row input[type="text"] {
+    touch-action: auto;
   }
   .btn-add {
     padding: 8px 14px;
@@ -234,6 +237,7 @@
     outline: none;
     -webkit-appearance: none;
     background: transparent;
+    touch-action: auto;
   }
 
   /* 打卡模块 */
@@ -288,6 +292,7 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     position: relative;
+    touch-action: pan-x pan-y;
   }
   .checkin-table {
     min-width: 100%;
@@ -420,6 +425,7 @@
     max-height: 80vh;
     overflow-y: auto;
     animation: slideUp .3s cubic-bezier(0.25, 0.1, 0.25, 1);
+    touch-action: auto;
   }
   @keyframes slideUp {
     from { transform: translateY(100%); }
@@ -529,6 +535,7 @@
     font-size: 16px;
     outline: none;
     -webkit-appearance: none;
+    touch-action: auto;
   }
   .form-input:focus {
     border-color: #007aff;
@@ -554,6 +561,7 @@
     font-weight: 600;
     cursor: pointer;
     -webkit-appearance: none;
+    touch-action: auto;
   }
   .form-btn.cancel {
     background: #f2f2f7;
@@ -579,6 +587,9 @@
   }
   .note-textarea:focus {
     border-color: #007aff;
+  }
+  .note-textarea {
+    touch-action: auto;
   }
 
   /* 底部统计 */
@@ -1492,17 +1503,7 @@
   }
 
   // ========== iOS 优化 ==========
-  document.addEventListener('touchend', function(e) {
-    // 如果目标元素是输入框，不阻止默认行为
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
-      return;
-    }
-    var now = Date.now();
-    if (now - (this.lastTouch || 0) < 300) {
-      e.preventDefault();
-    }
-    this.lastTouch = now;
-  }, { passive: false });
+  // 移除全局 touchend 阻止，改用 CSS touch-action: manipulation 来禁止双击缩放
 
   document.addEventListener('touchmove', function() {}, { passive: true });
 
